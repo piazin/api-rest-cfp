@@ -1,0 +1,61 @@
+import fs from 'fs';
+import { google } from 'googleapis';
+import { IProfilePic } from '../api/models/ProfilePic';
+
+import config from '../config/index';
+const { google_json_key, google_folder_id } = config;
+
+const auth = new google.auth.GoogleAuth({
+  // keyFile: JSON.stringify(config.googleapikey),
+  credentials: JSON.parse(google_json_key),
+  scopes: ['https://www.googleapis.com/auth/drive'],
+});
+
+const driveService = google.drive({
+  version: 'v3',
+  auth,
+});
+
+export async function uploadFileGoogleDrive(fileInfo: IProfilePic) {
+  try {
+    const fileMetaData = {
+      name: fileInfo.filename,
+      parents: [google_folder_id],
+    };
+
+    const media = {
+      mimeType: fileInfo.mimetype,
+      body: fs.createReadStream(fileInfo.url),
+    };
+
+    const response = await driveService.files.create({
+      requestBody: fileMetaData,
+      media: media,
+      fields: 'id',
+    });
+
+    fs.unlink(fileInfo.url, (err) => {
+      if (err) throw err;
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+}
+
+export async function deleteFileGoogleDrive(fileId: string) {
+  try {
+    const response = await driveService.files.delete({
+      fileId: fileId,
+    });
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error(error);
+    return error.message;
+  }
+}

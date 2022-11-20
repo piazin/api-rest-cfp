@@ -1,0 +1,1 @@
+{"version":3,"file":"isOwner.js","sourceRoot":"","sources":["../../src/utils/isOwner.ts"],"names":[],"mappings":";;;AACO,MAAM,OAAO,GAAG,CAAC,KAA8B,EAAE,aAAsC,EAAE,EAAE;IAChG,OAAO,IAAI,CAAC,SAAS,CAAC,KAAK,CAAC,KAAK,IAAI,CAAC,SAAS,CAAC,aAAa,CAAC,CAAC;AACjE,CAAC,CAAC;AAFW,QAAA,OAAO,WAElB"}
