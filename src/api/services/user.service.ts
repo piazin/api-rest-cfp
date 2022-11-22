@@ -56,11 +56,12 @@ export class userService {
 
     const token = user.generateJwt();
 
-    const { _id, name, avatar, created_at } = user;
+    const { _id, name, avatar, created_at, balance } = user;
     return {
       _id,
       name,
       email,
+      balance,
       avatar,
       created_at,
       token,

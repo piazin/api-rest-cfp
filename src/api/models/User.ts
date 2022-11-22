@@ -11,6 +11,7 @@ export interface IUser {
   name: string;
   email: string;
   password: string;
+  balance?: number;
   avatar: object;
   transactions?: string;
   created_at?: Date;
@@ -31,6 +32,11 @@ export const UserSchema = new Schema<IUser>({
   password: {
     type: String,
     required: true,
+  },
+  balance: {
+    type: Number,
+    required: true,
+    default: 0.0,
   },
   transactions: {
     type: String,
