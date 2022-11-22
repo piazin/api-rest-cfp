@@ -19,7 +19,8 @@ export default function (req: Request, res: Response, next: NextFunction) {
     });
 
   jwt.verify(token, jwt_secret, (err, decode) => {
-    if (err) return res.status(401).json({ status: 401, message: 'unauthorized user' });
+    if (err) return res.status(401).json({ status: 401, message: err.message });
+    req.user = decode;
     next();
   });
 }

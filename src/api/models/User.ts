@@ -1,4 +1,4 @@
-import { Schema, Types } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import config from '../../config';
 import bcrypt from 'bcrypt';
@@ -19,7 +19,7 @@ export interface IUser {
   generateJwt: () => string;
 }
 
-export const UserSchema = new Schema<IUser>({
+const UserSchema = new Schema<IUser>({
   name: {
     type: String,
     required: true,
@@ -64,6 +64,8 @@ UserSchema.methods = {
   },
 
   generateJwt() {
-    return jwt.sign({ user: [this._id, this.email] }, jwt_secret, { expiresIn: '18000' });
+    return jwt.sign({ user_id: this._id }, jwt_secret, { expiresIn: '1h' });
   },
 };
+
+export const User = model('user', UserSchema);

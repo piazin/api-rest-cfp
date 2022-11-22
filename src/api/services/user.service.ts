@@ -1,13 +1,12 @@
 import { model } from 'mongoose';
 import Joi from 'joi';
-import { UserSchema } from '../models/User';
+import { User } from '../models/User';
 import { ProfilePicSchema, IProfilePic } from '../models/ProfilePic';
 import { IUser } from '../models/User';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
 import constantsUser from '../../constants/user.constants';
 import { isIdValid } from '../../utils/isIdValid';
 
-const User = model('user', UserSchema);
 const ProfilePic = model('profilepic', ProfilePicSchema);
 
 const {

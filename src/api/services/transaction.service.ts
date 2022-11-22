@@ -1,7 +1,8 @@
 import Joi from 'joi';
-import { model, Types } from 'mongoose';
+import { model } from 'mongoose';
 import constants from '../../constants/transaction.constants';
 import { TransactionSchema } from '../models/Transaction';
+import { User } from '../models/User';
 import { ITransaction } from '../models/Transaction';
 import { isIdValid } from '../../utils/isIdValid';
 import { isOwner } from '../../utils/isOwner';
@@ -12,7 +13,7 @@ const {
 } = constants;
 
 class transactionService {
-  async create(transaction: ITransaction) {
+  async create(transaction: ITransaction, user_id: string) {
     const validationSchema = Joi.object({
       value: Joi.number().required().error(new Error(invalidValue)),
       description: Joi.string().min(1).max(100).required().error(new Error(invalidDescription)),
@@ -21,8 +22,18 @@ class transactionService {
       owner: Joi.string().required().error(new Error(invalidFields)),
       type: Joi.string().required().error(new Error(invalidFields)),
     });
-
     await validationSchema.validateAsync(transaction);
+
+    var totalBalance: number;
+
+    console.log(user_id);
+    var { balance } = await User.findById(user_id);
+
+    if (balance === null || balance === undefined) throw new Error('invalid balance');
+
+    totalBalance = balance += transaction.value;
+
+    await User.findByIdAndUpdate(user_id, { balance: totalBalance });
 
     const response = await Transaction.create(transaction);
 

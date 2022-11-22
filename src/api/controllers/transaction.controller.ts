@@ -33,7 +33,7 @@ export async function getTransactionByUserId(req: IRequest, res: Response) {
 
 export async function createTransaction(req: Request, res: Response) {
   try {
-    const response = await createService(req.body);
+    const response = await createService(req.body, req.user.user_id);
     return res.status(201).json({
       status: 201,
       data: response,
