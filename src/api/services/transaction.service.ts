@@ -25,18 +25,20 @@ class transactionService {
     await validationSchema.validateAsync(transaction);
 
     var totalBalance: number;
-
-    console.log(user_id);
     var { balance } = await User.findById(user_id);
 
+    if (transaction.type != 'expense' && transaction.type != 'income')
+      throw new Error('invalid type');
     if (balance === null || balance === undefined) throw new Error('invalid balance');
 
-    totalBalance = balance += transaction.value;
+    totalBalance =
+      transaction.type == 'expense'
+        ? (balance -= transaction.value)
+        : (balance += transaction.value);
 
     await User.findByIdAndUpdate(user_id, { balance: totalBalance });
 
     const response = await Transaction.create(transaction);
-
     return response;
   }
 

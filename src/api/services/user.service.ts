@@ -77,7 +77,6 @@ export class userService {
     }
 
     avatar.owner = owner;
-
     const { fieldname, destination, encoding, path, ...rest } = avatar;
     const avatarFilter: IProfilePic = {
       ...rest,
