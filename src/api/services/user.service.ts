@@ -84,6 +84,8 @@ export class userService {
     };
 
     var response = await uploadFileGoogleDrive(avatarFilter);
+    if (!response) throw new Error('Não foi possivel fazer o upload');
+
     avatarFilter.url = `https://drive.google.com/uc?export=view&id=${response.id}`;
     avatarFilter.googleFileId = response.id;
 

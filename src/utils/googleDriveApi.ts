@@ -40,8 +40,8 @@ export async function uploadFileGoogleDrive(fileInfo: IProfilePic) {
 
     return response.data;
   } catch (error) {
-    console.error(error);
-    return {};
+    console.error(error.message);
+    return;
   }
 }
 
