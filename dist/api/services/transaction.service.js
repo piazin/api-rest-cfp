@@ -16,12 +16,13 @@ const joi_1 = __importDefault(require("joi"));
 const mongoose_1 = require("mongoose");
 const transaction_constants_1 = __importDefault(require("../../constants/transaction.constants"));
 const Transaction_1 = require("../models/Transaction");
+const User_1 = require("../models/User");
 const isIdValid_1 = require("../../utils/isIdValid");
 const isOwner_1 = require("../../utils/isOwner");
 const Transaction = (0, mongoose_1.model)('transaction', Transaction_1.TransactionSchema);
 const { err: { invalidValue, invalidDescription, invalidFields, invalidID, isNotOwner }, } = transaction_constants_1.default;
 class transactionService {
-    create(transaction) {
+    create(transaction, user_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const validationSchema = joi_1.default.object({
                 value: joi_1.default.number().required().error(new Error(invalidValue)),
@@ -32,6 +33,18 @@ class transactionService {
                 type: joi_1.default.string().required().error(new Error(invalidFields)),
             });
             yield validationSchema.validateAsync(transaction);
+            var totalBalance;
+            var { balance } = yield User_1.User.findById(user_id);
+            console.log(balance);
+            if (transaction.type != 'expense' && transaction.type != 'income')
+                throw new Error('invalid type');
+            if (balance === null || balance === undefined)
+                throw new Error('invalid balance');
+            totalBalance =
+                transaction.type == 'expense'
+                    ? (balance -= transaction.value)
+                    : (balance += transaction.value);
+            yield User_1.User.findByIdAndUpdate(user_id, { balance: totalBalance });
             const response = yield Transaction.create(transaction);
             return response;
         });

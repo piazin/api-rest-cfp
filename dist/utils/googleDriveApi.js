@@ -46,12 +46,11 @@ function uploadFileGoogleDrive(fileInfo) {
                 if (err)
                     throw err;
             });
-            console.log('hello');
             return response.data;
         }
         catch (error) {
-            console.error(error);
-            return {};
+            console.error(error.message);
+            return;
         }
     });
 }

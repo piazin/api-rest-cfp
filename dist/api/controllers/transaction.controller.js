@@ -40,7 +40,7 @@ exports.getTransactionByUserId = getTransactionByUserId;
 function createTransaction(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield createService(req.body);
+            const response = yield createService(req.body, req.user.user_id);
             return res.status(201).json({
                 status: 201,
                 data: response,

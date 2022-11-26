@@ -31,16 +31,15 @@ const ProfilePic_1 = require("../models/ProfilePic");
 const googleDriveApi_1 = require("../../utils/googleDriveApi");
 const user_constants_1 = __importDefault(require("../../constants/user.constants"));
 const isIdValid_1 = require("../../utils/isIdValid");
-const User = (0, mongoose_1.model)('user', User_1.UserSchema);
 const ProfilePic = (0, mongoose_1.model)('profilepic', ProfilePic_1.ProfilePicSchema);
 const { err: { invalidUser, invalidGoogleFileId }, } = user_constants_1.default;
 class userService {
     findOneUserByID(user_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            var response = yield User.findOne({ _id: user_id });
+            var response = yield User_1.User.findOne({ _id: user_id });
             if (!response)
                 return {};
-            var avatar = yield ProfilePic.findOne({ user: user_id });
+            var avatar = yield ProfilePic.findOne({ owner: user_id });
             response.avatar = avatar;
             response.transactions = `http://localhost:8080/api/v1/transaction/${response._id}`;
             return response;
@@ -54,28 +53,29 @@ class userService {
                 password: joi_1.default.string().min(6).required(),
             }).error(new Error('all fields required'));
             yield schemaValidation.validateAsync(user);
-            const findUser = yield User.findOne({ email: user.email });
+            const findUser = yield User_1.User.findOne({ email: user.email });
             if (findUser)
                 throw new Error('Usuário já cadastrado');
-            var response = yield User.create(user);
+            var response = yield User_1.User.create(user);
             return response;
         });
     }
     signInUser(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            var user = yield User.findOne({ email: email });
+            var user = yield User_1.User.findOne({ email: email });
             if (!user)
                 throw new Error('Usuário não encotrado');
             if (!(yield user.compareHash(password)))
                 throw new Error('E-mail ou senha incorreta');
-            var profilePic = yield ProfilePic.findOne({ user: user._id });
+            var profilePic = yield ProfilePic.findOne({ owner: user._id });
             user.avatar = profilePic;
             const token = user.generateJwt();
-            const { _id, name, avatar, created_at } = user;
+            const { _id, name, avatar, created_at, balance } = user;
             return {
                 _id,
                 name,
                 email,
+                balance,
                 avatar,
                 created_at,
                 token,
@@ -95,6 +95,8 @@ class userService {
             const { fieldname, destination, encoding, path } = avatar, rest = __rest(avatar, ["fieldname", "destination", "encoding", "path"]);
             const avatarFilter = Object.assign(Object.assign({}, rest), { url: path });
             var response = yield (0, googleDriveApi_1.uploadFileGoogleDrive)(avatarFilter);
+            if (!response)
+                throw new Error('Não foi possivel fazer o upload');
             avatarFilter.url = `https://drive.google.com/uc?export=view&id=${response.id}`;
             avatarFilter.googleFileId = response.id;
             return yield ProfilePic.create(avatarFilter);

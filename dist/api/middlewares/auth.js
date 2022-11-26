@@ -19,9 +19,9 @@ function default_1(req, res, next) {
             message: 'unauthorized user',
         });
     jsonwebtoken_1.default.verify(token, jwt_secret, (err, decode) => {
-        console.log(err);
         if (err)
-            return res.status(401).json({ status: 401, message: 'unauthorized user' });
+            return res.status(401).json({ status: 401, message: err.message });
+        req.user = decode;
         next();
     });
 }
