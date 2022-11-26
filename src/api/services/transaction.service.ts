@@ -33,10 +33,15 @@ class transactionService {
 
     totalBalance =
       transaction.type == 'expense'
-        ? (balance -= transaction.value)
-        : (balance += transaction.value);
+        ? (balance * 100 - transaction.value * 100) / 100
+        : (balance * 100 + transaction.value * 100) / 100;
 
-    await User.findByIdAndUpdate(user_id, { balance: totalBalance });
+    var responseUser = await User.findByIdAndUpdate(
+      user_id,
+      { balance: totalBalance },
+      { new: true }
+    );
+    console.log(responseUser);
 
     const response = await Transaction.create(transaction);
     return response;
@@ -75,7 +80,7 @@ class transactionService {
   }
 
   async find(owner: string) {
-    const response = await Transaction.find({ owner: owner });
+    const response = await Transaction.find({ owner: owner }).sort('-date');
     return {
       data: response,
       results: response.length,
