@@ -36,30 +36,37 @@ class transactionService {
         ? (balance * 100 - transaction.value * 100) / 100
         : (balance * 100 + transaction.value * 100) / 100;
 
-    var responseUser = await User.findByIdAndUpdate(
-      user_id,
-      { balance: totalBalance },
-      { new: true }
-    );
-    console.log(responseUser);
+    await User.findByIdAndUpdate(user_id, { balance: totalBalance }, { new: true });
 
     const response = await Transaction.create(transaction);
     return response;
   }
 
-  async update(id: string, transaction: ITransaction) {
+  async update(id: string, transactionUpdate: ITransaction) {
     if (!id || !isIdValid(id)) throw new Error(invalidID);
 
     const transactionRes: ITransaction = await Transaction.findById(id);
 
     if (!transactionRes) throw new Error(invalidID);
-    if (!isOwner(transaction.owner, transactionRes.owner))
+    if (!isOwner(transactionUpdate.owner, transactionRes.owner))
       throw { status: 401, message: isNotOwner };
 
-    const response = await Transaction.findByIdAndUpdate(id, transaction, { new: true });
+    var totalBalance: number;
+    var { balance } = await User.findById(transactionRes.owner);
+    if (balance === null || balance === undefined) throw new Error('invalid balance');
 
-    if (!response) throw new Error(invalidID);
+    balance =
+      transactionUpdate.type == 'expense'
+        ? (balance * 100 - transactionUpdate.value * 100) / 100
+        : (balance * 100 + transactionUpdate.value * 100) / 100;
 
+    totalBalance =
+      transactionUpdate.type == 'expense'
+        ? (balance * 100 - transactionUpdate.value * 100) / 100
+        : (balance * 100 + transactionUpdate.value * 100) / 100;
+
+    await User.findByIdAndUpdate(transactionRes.owner, { balance: totalBalance }, { new: true });
+    const response = await Transaction.findByIdAndUpdate(id, transactionUpdate, { new: true });
     return response;
   }
 
