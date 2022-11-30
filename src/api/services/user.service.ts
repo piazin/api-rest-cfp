@@ -15,7 +15,7 @@ const {
 
 export class userService {
   async findOneUserByID(user_id: string) {
-    var response: IUser = await User.findOne({ _id: user_id });
+    var response: IUser = await User.findOne({ _id: user_id }).select('-password -__v');
     if (!response) return {};
 
     var avatar = await ProfilePic.findOne({ owner: user_id });
@@ -44,7 +44,7 @@ export class userService {
   }
 
   async signInUser(email: string, password: string) {
-    var user = await User.findOne({ email: email });
+    var user = await User.findOne({ email: email }).select('-password -__v');
 
     if (!user) throw new Error('Usuário não encotrado');
 
@@ -55,14 +55,8 @@ export class userService {
 
     const token = user.generateJwt();
 
-    const { _id, name, avatar, created_at, balance } = user;
     return {
-      _id,
-      name,
-      email,
-      balance,
-      avatar,
-      created_at,
+      user,
       token,
     };
   }

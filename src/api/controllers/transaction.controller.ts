@@ -14,7 +14,7 @@ interface IRequest extends Request {
 
 export async function getTransactionByUserId(req: IRequest, res: Response) {
   try {
-    const response = await findService(req.params.id);
+    const response = await findService(req.params.id, req);
     return res.status(200).json({
       status: 200,
       results: response.results,

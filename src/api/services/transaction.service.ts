@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { model } from 'mongoose';
+import { Request } from 'express';
 import constants from '../../constants/transaction.constants';
 import { TransactionSchema } from '../models/Transaction';
 import { User } from '../models/User';
@@ -86,8 +87,11 @@ class transactionService {
     return response;
   }
 
-  async find(owner: string) {
-    const response = await Transaction.find({ owner: owner }).sort('-date');
+  async find(owner: string, reqQuery: Request) {
+    const queryObj = { ...reqQuery.query };
+    console.log(queryObj);
+
+    const response = await Transaction.find({ owner: owner });
     return {
       data: response,
       results: response.length,
