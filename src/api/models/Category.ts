@@ -1,13 +1,17 @@
-import { Schema } from "mongoose";
+import { Schema } from 'mongoose';
 
 export interface ICategory {
   title: string;
+  iconName: string;
 }
 
 export const CategorySchema = new Schema<ICategory>({
   title: {
     type: String,
     required: true,
-    unique: true,
+  },
+  iconName: {
+    type: String,
+    required: true,
   },
 });

@@ -43,8 +43,8 @@ export class userService {
     return response;
   }
 
-  async signInUser(email: string, password: string) {
-    var user = await User.findOne({ email: email }).select('-password -__v');
+  async signInUser(emailUser: string, password: string) {
+    var user = await User.findOne({ email: emailUser }).select('-__v');
 
     if (!user) throw new Error('Usuário não encotrado');
 
@@ -55,8 +55,16 @@ export class userService {
 
     const token = user.generateJwt();
 
+    const { _id, name, email, balance, transactions, avatar, created_at } = user;
+
     return {
-      user,
+      _id,
+      name,
+      email,
+      balance,
+      avatar,
+      transactions,
+      created_at,
       token,
     };
   }
