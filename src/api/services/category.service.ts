@@ -1,17 +1,23 @@
-import { model } from "mongoose";
-import { CategorySchema } from "../models/Category";
+import { model } from 'mongoose';
+import { CategorySchema } from '../models/Category';
 
 // @types
-import { ICategory } from "../models/Category";
+import { ICategory } from '../models/Category';
 
-const Category = model("category", CategorySchema);
+const Category = model('category', CategorySchema);
 
 class categoryService {
-  async create(categoryObj: ICategory) {
+  async createService(categoryObj: ICategory) {
     const response = await Category.create({
       title: categoryObj.title,
+      iconName: categoryObj.iconName,
     });
 
+    return response;
+  }
+
+  async findAllService() {
+    const response = await Category.find();
     return response;
   }
 }

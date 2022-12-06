@@ -1,7 +1,23 @@
-import { Request, Response } from "express";
-import categoryService from "../services/category.service";
+import { Request, Response } from 'express';
+import categoryService from '../services/category.service';
 
-const { create: createService } = new categoryService();
+const { createService, findAllService } = new categoryService();
+
+export async function findAll(req: Request, res: Response) {
+  try {
+    const response = await findAllService();
+    return res.status(200).json({
+      status: 200,
+      data: response,
+    });
+  } catch ({ message }) {
+    console.error(message);
+    return res.status(500).json({
+      status: 500,
+      message: message,
+    });
+  }
+}
 
 export async function create(req: Request, res: Response) {
   try {
@@ -10,11 +26,11 @@ export async function create(req: Request, res: Response) {
       status: 201,
       data: response,
     });
-  } catch (error) {
-    console.error(error);
+  } catch ({ message }) {
+    console.error(message);
     return res.status(500).json({
       status: 500,
-      message: "",
+      message: message,
     });
   }
 }

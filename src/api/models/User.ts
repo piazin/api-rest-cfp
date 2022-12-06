@@ -64,7 +64,7 @@ UserSchema.methods = {
   },
 
   generateJwt() {
-    return jwt.sign({ user_id: this._id }, jwt_secret, { expiresIn: '1h' });
+    return jwt.sign({ user_id: this._id }, jwt_secret, { expiresIn: '7d' });
   },
 };
 

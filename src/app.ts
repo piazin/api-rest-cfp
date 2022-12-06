@@ -15,9 +15,6 @@ import { router as transactionRouter } from './routes/transaction.routes';
 
 const app = express();
 
-import { job } from './jobs/testJob';
-job.start();
-
 // routes import
 
 if (!(process.env.NODE_ENV === 'production')) app.use(morgan('dev'));
