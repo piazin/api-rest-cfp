@@ -7,7 +7,7 @@ import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/google
 import constantsUser from '../../constants/user.constants';
 import { isIdValid } from '../../utils/isIdValid';
 
-const ProfilePic = model('profilepic', ProfilePicSchema);
+const ProfilePic = model('Profilepic', ProfilePicSchema);
 
 const {
   err: { invalidUser, invalidGoogleFileId },
@@ -38,9 +38,21 @@ export class userService {
     const findUser = await User.findOne({ email: user.email });
     if (findUser) throw new Error('Usuário já cadastrado');
 
-    var response = await User.create(user);
+    var userCreated = await User.create(user);
+    var token = userCreated.generateJwt();
 
-    return response;
+    const { _id, name, email, balance, transactions, avatar, created_at } = userCreated;
+
+    return {
+      _id,
+      name,
+      email,
+      balance,
+      transactions,
+      avatar,
+      created_at,
+      token,
+    };
   }
 
   async signInUser(emailUser: string, password: string) {

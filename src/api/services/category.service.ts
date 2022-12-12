@@ -4,7 +4,7 @@ import { CategorySchema } from '../models/Category';
 // @types
 import { ICategory } from '../models/Category';
 
-const Category = model('category', CategorySchema);
+const Category = model('Category', CategorySchema);
 
 class categoryService {
   async createService(categoryObj: ICategory) {

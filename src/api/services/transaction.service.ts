@@ -8,7 +8,7 @@ import { ITransaction } from '../models/Transaction';
 import { isIdValid } from '../../utils/isIdValid';
 import { isOwner } from '../../utils/isOwner';
 
-const Transaction = model('transaction', TransactionSchema);
+const Transaction = model('Transaction', TransactionSchema);
 const {
   err: { invalidValue, invalidDescription, invalidFields, invalidID, isNotOwner },
 } = constants;
