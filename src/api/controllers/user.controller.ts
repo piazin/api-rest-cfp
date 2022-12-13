@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { userService } from '../services/user.service';
+import tokenService from '../services/token.service';
 
 const {
   createUser,
@@ -8,6 +9,8 @@ const {
   deleteProfilePic: delProPic,
   signInUser,
 } = new userService();
+
+const { generatePassRecoveryCode } = new tokenService();
 
 export async function find(req: Request, res: Response) {
   try {
@@ -37,6 +40,25 @@ export async function create(req: Request, res: Response) {
     return res.status(400).json({
       status: 400,
       message: error.message,
+    });
+  }
+}
+
+export async function passwordRecoveryCode(req: Request, res: Response) {
+  try {
+    let ip: string | string[] =
+      req.ip || req.socket.remoteAddress || req.headers['x-forwarded-for'];
+
+    const response = await generatePassRecoveryCode(req.body.email, ip);
+    return res.status(200).json({
+      status: 200,
+      data: response,
+    });
+  } catch ({ message }) {
+    console.error(message);
+    return res.status(400).json({
+      status: 400,
+      message: message,
     });
   }
 }

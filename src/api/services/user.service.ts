@@ -1,8 +1,8 @@
 import { model } from 'mongoose';
 import Joi from 'joi';
 import { User } from '../models/User';
-import { ProfilePicSchema, IProfilePic } from '../models/ProfilePic';
 import { IUser } from '../models/User';
+import { ProfilePicSchema, IProfilePic } from '../models/ProfilePic';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
 import constantsUser from '../../constants/user.constants';
 import { isIdValid } from '../../utils/isIdValid';
@@ -60,7 +60,7 @@ export class userService {
 
     if (!user) throw new Error('Usuário não encotrado');
 
-    if (!(await user.compareHash(password))) throw new Error('E-mail ou senha incorreta');
+    if (!user.compareHash(password)) throw new Error('E-mail ou senha incorreta');
 
     var profilePic = await ProfilePic.findOne({ owner: user._id });
     user.avatar = profilePic;

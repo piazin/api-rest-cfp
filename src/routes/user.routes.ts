@@ -6,6 +6,7 @@ import {
   uploadProfilePic,
   deleteProfilePic,
   signIn,
+  passwordRecoveryCode,
 } from '../api/controllers/user.controller';
 
 import auth from '../api/middlewares/auth';
@@ -18,4 +19,5 @@ export const router = Router();
 router.route('/:id').get(find);
 router.route('/').post(create);
 router.route('/authenticate').post(signIn);
+router.route('/password-reset-request').post(passwordRecoveryCode);
 router.route('/avatar').post(upload.single('avatar'), uploadProfilePic).delete(deleteProfilePic);

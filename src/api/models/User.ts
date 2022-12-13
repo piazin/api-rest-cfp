@@ -60,7 +60,7 @@ UserSchema.pre('save', async function (next) {
 
 UserSchema.methods = {
   compareHash(hash: string) {
-    return bcrypt.compare(hash, this.password);
+    return bcrypt.compareSync(hash, this.password);
   },
 
   generateJwt() {

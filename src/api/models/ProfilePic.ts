@@ -21,6 +21,6 @@ export const ProfilePicSchema = new Schema<IProfilePic>({
   googleFileId: String,
   owner: {
     type: Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'User',
   },
 });
