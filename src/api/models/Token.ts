@@ -34,7 +34,7 @@ const TokenSchema = new Schema<IToken>({
   },
   expire_timestamp: {
     type: Number,
-    default: moment().add(5, 'minutes').unix(),
+    required: true,
   },
 });
 

@@ -62,12 +62,12 @@ export class userService {
 
   async changePassword(user_id: string, password: string) {
     var codeChecked = await isCodeChecked(user_id);
-    if (!codeChecked) throw new Error('Seu codigo já foi ultilizado');
-
+    if (!codeChecked.status) throw new Error('Seu codigo já foi ultilizado');
+    console.log(codeChecked);
     var user = await User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
     if (!user) throw new Error(userNotFound);
 
-    await setCodeUsed(user_id);
+    await setCodeUsed(codeChecked.resCode._id);
 
     return `Senha alterada`;
   }
@@ -75,9 +75,10 @@ export class userService {
   async signInUser(emailUser: string, password: string) {
     var user = await User.findOne({ email: emailUser }).select('-__v');
 
-    if (!user) throw new Error('Usuário não encotrado');
+    if (!user) throw { message: 'Usuário não encotrado', statusCode: 401 };
 
-    if (!user.compareHash(password)) throw new Error('E-mail ou senha incorreta');
+    if (!user.compareHash(password))
+      throw { message: 'E-mail ou senha incorreta', statusCode: 403 };
 
     var profilePic = await ProfilePic.findOne({ owner: user._id });
     user.avatar = profilePic;

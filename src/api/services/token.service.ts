@@ -11,6 +11,12 @@ const {
   err: { userNotFound, failSendEmail },
 } = constants;
 
+type TParametersDeleteToken = {
+  user_id?: string;
+  code?: number;
+  used?: boolean;
+};
+
 class TokenService {
   async generatePassRecoveryCode(email: string, ip: string | string[]) {
     if (!email) throw new Error('Email invalido');
@@ -18,12 +24,17 @@ class TokenService {
     const user = await User.findOne({ email: email });
     if (!user) throw new Error(userNotFound);
 
+    await Token.deleteMany({ user_id: user._id, used: false });
+
     var code: number;
+    var codeString: string;
+    var expire_timestamp: number = moment().add(5, 'minutes').unix();
     var randomBytes = crypto.randomBytes(64).toString('base64');
     var generateCode = seedrandom(randomBytes, { entropy: true });
-    code = parseInt(generateCode().toString().substring(3, 9));
+    codeString = generateCode().toString().replace('0', '');
+    code = parseInt(codeString.substring(3, 9));
 
-    await Token.create({ code, user_id: user._id });
+    await Token.create({ code, user_id: user._id, expire_timestamp });
 
     var emailSendingStatus = await sendEmail(user.email, user.name, code);
     if (!emailSendingStatus) throw new Error(failSendEmail);
@@ -46,17 +57,29 @@ class TokenService {
   }
 
   async isCodeChecked(user_id: string) {
-    var resCode = await Token.findOne({ user_id: user_id, used: false });
+    var resCode = await Token.findOne({ user_id: user_id, used: false, checked: true });
 
     if (!resCode) throw new Error('Codigo não encontrado ou invalido');
     if (!resCode.checked) throw new Error('Codigo não foi verificado');
     if (resCode.used) throw new Error('Codigo já foi ultilizado');
 
-    return true;
+    return { status: true, resCode };
   }
 
-  async setCodeUsed(user_id: Types.ObjectId | string) {
-    await Token.findOneAndUpdate({ user_id: user_id }, { $set: { used: true } });
+  async setCodeUsed(id: Types.ObjectId | string) {
+    await Token.findByIdAndUpdate(id, { used: true });
+  }
+
+  async deleteToken({ user_id, code, used }: TParametersDeleteToken) {
+    if (user_id)
+      console.log('🚀 ~ file: token.service.ts:70 ~ TokenService ~ deleteToken ~ user_id', user_id);
+
+    if (code)
+      console.log('🚀 ~ file: token.service.ts:75 ~ TokenService ~ deleteToken ~ code', code);
+
+    if (used) {
+      await Token.deleteMany({ used: used });
+    }
   }
 }
 

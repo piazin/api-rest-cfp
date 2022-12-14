@@ -6,6 +6,9 @@ import express, {
   ErrorRequestHandler as ErrReqHndler,
 } from 'express';
 
+import { jobOfDeletingTokens } from './jobs/deleteUsedTokens';
+jobOfDeletingTokens.start();
+
 import mongoose from './api/database/dbconnection';
 mongoose.connections[0];
 
