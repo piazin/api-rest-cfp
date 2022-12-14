@@ -27,16 +27,18 @@ exports.userService = void 0;
 const mongoose_1 = require("mongoose");
 const joi_1 = __importDefault(require("joi"));
 const User_1 = require("../models/User");
+const token_service_1 = __importDefault(require("./token.service"));
 const ProfilePic_1 = require("../models/ProfilePic");
-const googleDriveApi_1 = require("../../utils/googleDriveApi");
 const user_constants_1 = __importDefault(require("../../constants/user.constants"));
+const googleDriveApi_1 = require("../../utils/googleDriveApi");
 const isIdValid_1 = require("../../utils/isIdValid");
-const ProfilePic = (0, mongoose_1.model)('profilepic', ProfilePic_1.ProfilePicSchema);
-const { err: { invalidUser, invalidGoogleFileId }, } = user_constants_1.default;
+const ProfilePic = (0, mongoose_1.model)('Profilepic', ProfilePic_1.ProfilePicSchema);
+const { isCodeChecked, setCodeUsed } = new token_service_1.default();
+const { err: { invalidUser, invalidGoogleFileId, userNotFound }, } = user_constants_1.default;
 class userService {
     findOneUserByID(user_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            var response = yield User_1.User.findOne({ _id: user_id });
+            var response = yield User_1.User.findOne({ _id: user_id }).select('-password -__v');
             if (!response)
                 return {};
             var avatar = yield ProfilePic.findOne({ owner: user_id });
@@ -56,27 +58,51 @@ class userService {
             const findUser = yield User_1.User.findOne({ email: user.email });
             if (findUser)
                 throw new Error('Usuário já cadastrado');
-            var response = yield User_1.User.create(user);
-            return response;
+            var userCreated = yield User_1.User.create(user);
+            var token = userCreated.generateJwt();
+            const { _id, name, email, balance, transactions, avatar, created_at } = userCreated;
+            return {
+                _id,
+                name,
+                email,
+                balance,
+                transactions,
+                avatar,
+                created_at,
+                token,
+            };
         });
     }
-    signInUser(email, password) {
+    changePassword(user_id, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            var user = yield User_1.User.findOne({ email: email });
+            var codeChecked = yield isCodeChecked(user_id);
+            if (!codeChecked)
+                throw new Error('Seu codigo já foi ultilizado');
+            var user = yield User_1.User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
+            if (!user)
+                throw new Error(userNotFound);
+            yield setCodeUsed(user_id);
+            return `Senha alterada`;
+        });
+    }
+    signInUser(emailUser, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var user = yield User_1.User.findOne({ email: emailUser }).select('-__v');
             if (!user)
                 throw new Error('Usuário não encotrado');
-            if (!(yield user.compareHash(password)))
+            if (!user.compareHash(password))
                 throw new Error('E-mail ou senha incorreta');
             var profilePic = yield ProfilePic.findOne({ owner: user._id });
             user.avatar = profilePic;
             const token = user.generateJwt();
-            const { _id, name, avatar, created_at, balance } = user;
+            const { _id, name, email, balance, transactions, avatar, created_at } = user;
             return {
                 _id,
                 name,
                 email,
                 balance,
                 avatar,
+                transactions,
                 created_at,
                 token,
             };

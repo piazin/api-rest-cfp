@@ -57,13 +57,22 @@ UserSchema.pre('save', function (next) {
         this.password = yield bcrypt_1.default.hash(this.password, 10);
     });
 });
+UserSchema.pre('findOneAndUpdate', function (next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = this.getUpdate();
+        if (!data.password)
+            return next();
+        data.password = yield bcrypt_1.default.hash(data.password, 10);
+        next();
+    });
+});
 UserSchema.methods = {
     compareHash(hash) {
-        return bcrypt_1.default.compare(hash, this.password);
+        return bcrypt_1.default.compareSync(hash, this.password);
     },
     generateJwt() {
-        return jsonwebtoken_1.default.sign({ user_id: this._id }, jwt_secret, { expiresIn: '1h' });
+        return jsonwebtoken_1.default.sign({ user_id: this._id }, jwt_secret, { expiresIn: '7d' });
     },
 };
-exports.User = (0, mongoose_1.model)('user', UserSchema);
+exports.User = (0, mongoose_1.model)('User', UserSchema);
 //# sourceMappingURL=User.js.map

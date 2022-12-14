@@ -28,7 +28,11 @@ dotenv.config();
 exports.default = {
     port: process.env.PORT,
     db: {
-        url: process.env.MONGO_URL,
+        url: process.env.NODE_ENV === 'production' ? process.env.MONGO_URL : process.env.MONGO_DOCKER,
+    },
+    email: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
     },
     jwt_secret: process.env.SECRET_JWT,
     google_json_key: process.env.GOOGLE_JSON_KEY,

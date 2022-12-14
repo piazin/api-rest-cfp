@@ -11,13 +11,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const Category_1 = require("../models/Category");
-const Category = (0, mongoose_1.model)("category", Category_1.CategorySchema);
+const Category = (0, mongoose_1.model)('Category', Category_1.CategorySchema);
 class categoryService {
-    create(categoryObj) {
+    createService(categoryObj) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield Category.create({
                 title: categoryObj.title,
+                iconName: categoryObj.iconName,
             });
+            return response;
+        });
+    }
+    findAllService() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield Category.find();
             return response;
         });
     }

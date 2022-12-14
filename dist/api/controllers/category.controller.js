@@ -12,9 +12,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.create = void 0;
+exports.create = exports.findAll = void 0;
 const category_service_1 = __importDefault(require("../services/category.service"));
-const { create: createService } = new category_service_1.default();
+const { createService, findAllService } = new category_service_1.default();
+function findAll(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield findAllService();
+            return res.status(200).json({
+                status: 200,
+                data: response,
+            });
+        }
+        catch ({ message }) {
+            console.error(message);
+            return res.status(500).json({
+                status: 500,
+                message: message,
+            });
+        }
+    });
+}
+exports.findAll = findAll;
 function create(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -24,11 +43,11 @@ function create(req, res) {
                 data: response,
             });
         }
-        catch (error) {
-            console.error(error);
+        catch ({ message }) {
+            console.error(message);
             return res.status(500).json({
                 status: 500,
-                message: "",
+                message: message,
             });
         }
     });

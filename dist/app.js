@@ -11,8 +11,6 @@ const category_routes_1 = require("./routes/category.routes");
 const user_routes_1 = require("./routes/user.routes");
 const transaction_routes_1 = require("./routes/transaction.routes");
 const app = (0, express_1.default)();
-const testJob_1 = require("./jobs/testJob");
-testJob_1.job.start();
 // routes import
 if (!(process.env.NODE_ENV === 'production'))
     app.use((0, morgan_1.default)('dev'));

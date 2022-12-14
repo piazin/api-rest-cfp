@@ -19,7 +19,7 @@ const Transaction_1 = require("../models/Transaction");
 const User_1 = require("../models/User");
 const isIdValid_1 = require("../../utils/isIdValid");
 const isOwner_1 = require("../../utils/isOwner");
-const Transaction = (0, mongoose_1.model)('transaction', Transaction_1.TransactionSchema);
+const Transaction = (0, mongoose_1.model)('Transaction', Transaction_1.TransactionSchema);
 const { err: { invalidValue, invalidDescription, invalidFields, invalidID, isNotOwner }, } = transaction_constants_1.default;
 class transactionService {
     create(transaction, user_id) {
@@ -35,32 +35,42 @@ class transactionService {
             yield validationSchema.validateAsync(transaction);
             var totalBalance;
             var { balance } = yield User_1.User.findById(user_id);
-            console.log(balance);
             if (transaction.type != 'expense' && transaction.type != 'income')
                 throw new Error('invalid type');
             if (balance === null || balance === undefined)
                 throw new Error('invalid balance');
             totalBalance =
                 transaction.type == 'expense'
-                    ? (balance -= transaction.value)
-                    : (balance += transaction.value);
-            yield User_1.User.findByIdAndUpdate(user_id, { balance: totalBalance });
+                    ? (balance * 100 - transaction.value * 100) / 100
+                    : (balance * 100 + transaction.value * 100) / 100;
+            yield User_1.User.findByIdAndUpdate(user_id, { balance: totalBalance }, { new: true });
             const response = yield Transaction.create(transaction);
             return response;
         });
     }
-    update(id, transaction) {
+    update(id, transactionUpdate) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!id || !(0, isIdValid_1.isIdValid)(id))
                 throw new Error(invalidID);
             const transactionRes = yield Transaction.findById(id);
             if (!transactionRes)
                 throw new Error(invalidID);
-            if (!(0, isOwner_1.isOwner)(transaction.owner, transactionRes.owner))
+            if (!(0, isOwner_1.isOwner)(transactionUpdate.owner, transactionRes.owner))
                 throw { status: 401, message: isNotOwner };
-            const response = yield Transaction.findByIdAndUpdate(id, transaction, { new: true });
-            if (!response)
-                throw new Error(invalidID);
+            var totalBalance;
+            var { balance } = yield User_1.User.findById(transactionRes.owner);
+            if (balance === null || balance === undefined)
+                throw new Error('invalid balance');
+            balance =
+                transactionUpdate.type == 'expense'
+                    ? (balance * 100 - transactionUpdate.value * 100) / 100
+                    : (balance * 100 + transactionUpdate.value * 100) / 100;
+            totalBalance =
+                transactionUpdate.type == 'expense'
+                    ? (balance * 100 - transactionUpdate.value * 100) / 100
+                    : (balance * 100 + transactionUpdate.value * 100) / 100;
+            yield User_1.User.findByIdAndUpdate(transactionRes.owner, { balance: totalBalance }, { new: true });
+            const response = yield Transaction.findByIdAndUpdate(id, transactionUpdate, { new: true });
             return response;
         });
     }
@@ -79,9 +89,10 @@ class transactionService {
             return response;
         });
     }
-    find(owner) {
+    find(owner, reqQuery) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield Transaction.find({ owner: owner });
+            const queryObj = Object.assign({}, reqQuery.query);
+            const response = yield Transaction.find({ owner: owner }).sort('-created_at');
             return {
                 data: response,
                 results: response.length,

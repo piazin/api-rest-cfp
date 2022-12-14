@@ -14,7 +14,7 @@ exports.ProfilePicSchema = new mongoose_1.Schema({
     googleFileId: String,
     owner: {
         type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
     },
 });
 //# sourceMappingURL=ProfilePic.js.map

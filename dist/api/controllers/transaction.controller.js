@@ -18,7 +18,7 @@ const { create: createService, find: findService, delete: deleteService, update:
 function getTransactionByUserId(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield findService(req.params.id);
+            const response = yield findService(req.params.id, req);
             return res.status(200).json({
                 status: 200,
                 results: response.results,

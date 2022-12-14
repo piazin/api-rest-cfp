@@ -1,11 +1,11 @@
 import crypto from 'crypto';
-import seedrandom from 'seedrandom';
 import moment from 'moment';
+import { Types } from 'mongoose';
+import seedrandom from 'seedrandom';
 import { Token } from '../models/Token';
 import { User } from '../models/User';
 import constants from '../../constants/user.constants';
 import sendEmail from '../../utils/sendEmail';
-import { Types } from 'mongoose';
 
 const {
   err: { userNotFound, failSendEmail },

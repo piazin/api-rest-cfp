@@ -8,10 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProfilePic = exports.uploadProfilePic = exports.signIn = exports.create = exports.find = void 0;
+exports.deleteProfilePic = exports.uploadProfilePic = exports.signIn = exports.changePassword = exports.validateCode = exports.requestPasswordRecoveryCode = exports.create = exports.find = void 0;
 const user_service_1 = require("../services/user.service");
-const { createUser, findOneUserByID, uploadProfilePic: upProPic, deleteProfilePic: delProPic, signInUser, } = new user_service_1.userService();
+const token_service_1 = __importDefault(require("../services/token.service"));
+const { createUser, findOneUserByID, uploadProfilePic: upProPic, deleteProfilePic: delProPic, signInUser, changePassword: changePass, } = new user_service_1.userService();
+const { generatePassRecoveryCode, validateTokenCode } = new token_service_1.default();
 function find(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -50,6 +55,63 @@ function create(req, res) {
     });
 }
 exports.create = create;
+function requestPasswordRecoveryCode(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let ip = req.ip || req.socket.remoteAddress || req.headers['x-forwarded-for'];
+            const response = yield generatePassRecoveryCode(req.body.email, ip);
+            return res.status(200).json({
+                status: 200,
+                message: response,
+            });
+        }
+        catch ({ message }) {
+            console.error(message);
+            return res.status(400).json({
+                status: 400,
+                message: message,
+            });
+        }
+    });
+}
+exports.requestPasswordRecoveryCode = requestPasswordRecoveryCode;
+function validateCode(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield validateTokenCode(req.body.code);
+            return res.status(200).json({
+                status: 200,
+                data: response,
+            });
+        }
+        catch ({ message }) {
+            console.error(message);
+            return res.status(400).json({
+                message: message,
+            });
+        }
+    });
+}
+exports.validateCode = validateCode;
+function changePassword(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield changePass(req.body.user_id, req.body.password);
+            return res.status(200).json({
+                status: 200,
+                data: response,
+            });
+        }
+        catch ({ message }) {
+            console.error(message);
+            return res.status(400).json({
+                status: 400,
+                message: message,
+            });
+        }
+    });
+}
+exports.changePassword = changePassword;
 function signIn(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
