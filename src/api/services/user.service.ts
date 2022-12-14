@@ -63,7 +63,6 @@ export class userService {
   async changePassword(user_id: string, password: string) {
     var codeChecked = await isCodeChecked(user_id);
     if (!codeChecked.status) throw new Error('Seu codigo já foi ultilizado');
-    console.log(codeChecked);
     var user = await User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
     if (!user) throw new Error(userNotFound);
 

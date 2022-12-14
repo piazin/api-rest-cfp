@@ -27,12 +27,12 @@ function sendEmail(user_email, user_name, code) {
             let mailConfig = {
                 from: {
                     name: 'Equipe CFP',
-                    address: 'ls4803326@gmail.com',
+                    address: 'financeinnovcfp@gmail.com',
                 },
                 to: user_email,
                 subject: 'Seu codigo de uso unico',
                 html: `
-      <p>Olá ${user_name}</p>
+      <p>Olá <strong>${user_name}</strong></p>
       <p>Nós recebemos uma solicitação para um código de uso único para a sua conta.</p>
       <p>Seu código de uso único é: <strong>${code}</strong></p>
       <p>Obrigado,</p>

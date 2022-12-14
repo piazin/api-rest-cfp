@@ -30,7 +30,7 @@ const TokenSchema = new mongoose_1.Schema({
     },
     expire_timestamp: {
         type: Number,
-        default: (0, moment_1.default)().add(5, 'minutes').unix(),
+        required: true,
     },
 });
 exports.Token = (0, mongoose_1.model)('Token', TokenSchema);

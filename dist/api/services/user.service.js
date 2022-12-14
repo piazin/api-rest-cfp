@@ -76,12 +76,12 @@ class userService {
     changePassword(user_id, password) {
         return __awaiter(this, void 0, void 0, function* () {
             var codeChecked = yield isCodeChecked(user_id);
-            if (!codeChecked)
+            if (!codeChecked.status)
                 throw new Error('Seu codigo já foi ultilizado');
             var user = yield User_1.User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
             if (!user)
                 throw new Error(userNotFound);
-            yield setCodeUsed(user_id);
+            yield setCodeUsed(codeChecked.resCode._id);
             return `Senha alterada`;
         });
     }
@@ -89,9 +89,9 @@ class userService {
         return __awaiter(this, void 0, void 0, function* () {
             var user = yield User_1.User.findOne({ email: emailUser }).select('-__v');
             if (!user)
-                throw new Error('Usuário não encotrado');
+                throw { message: 'Usuário não encotrado', statusCode: 401 };
             if (!user.compareHash(password))
-                throw new Error('E-mail ou senha incorreta');
+                throw { message: 'E-mail ou senha incorreta', statusCode: 403 };
             var profilePic = yield ProfilePic.findOne({ owner: user._id });
             user.avatar = profilePic;
             const token = user.generateJwt();

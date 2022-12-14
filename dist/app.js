@@ -5,6 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const morgan_1 = __importDefault(require("morgan"));
 const express_1 = __importDefault(require("express"));
+const deleteUsedTokens_1 = require("./jobs/deleteUsedTokens");
+deleteUsedTokens_1.jobOfDeletingTokens.start();
 const dbconnection_1 = __importDefault(require("./api/database/dbconnection"));
 dbconnection_1.default.connections[0];
 const category_routes_1 = require("./routes/category.routes");

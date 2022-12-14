@@ -124,8 +124,8 @@ function signIn(req, res) {
         }
         catch (error) {
             console.error(error);
-            return res.status(400).json({
-                status: 400,
+            return res.status(error.statusCode).json({
+                status: error.statusCode,
                 message: error.message,
             });
         }

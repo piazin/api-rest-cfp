@@ -28,11 +28,15 @@ class TokenService {
             const user = yield User_1.User.findOne({ email: email });
             if (!user)
                 throw new Error(userNotFound);
+            yield Token_1.Token.deleteMany({ user_id: user._id, used: false });
             var code;
+            var codeString;
+            var expire_timestamp = (0, moment_1.default)().add(5, 'minutes').unix();
             var randomBytes = crypto_1.default.randomBytes(64).toString('base64');
             var generateCode = (0, seedrandom_1.default)(randomBytes, { entropy: true });
-            code = parseInt(generateCode().toString().substring(3, 9));
-            yield Token_1.Token.create({ code, user_id: user._id });
+            codeString = generateCode().toString().replace('0', '');
+            code = parseInt(codeString.substring(3, 9));
+            yield Token_1.Token.create({ code, user_id: user._id, expire_timestamp });
             var emailSendingStatus = yield (0, sendEmail_1.default)(user.email, user.name, code);
             if (!emailSendingStatus)
                 throw new Error(failSendEmail);
@@ -57,19 +61,30 @@ class TokenService {
     }
     isCodeChecked(user_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            var resCode = yield Token_1.Token.findOne({ user_id: user_id, used: false });
+            var resCode = yield Token_1.Token.findOne({ user_id: user_id, used: false, checked: true });
             if (!resCode)
                 throw new Error('Codigo não encontrado ou invalido');
             if (!resCode.checked)
                 throw new Error('Codigo não foi verificado');
             if (resCode.used)
                 throw new Error('Codigo já foi ultilizado');
-            return true;
+            return { status: true, resCode };
         });
     }
-    setCodeUsed(user_id) {
+    setCodeUsed(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield Token_1.Token.findOneAndUpdate({ user_id: user_id }, { $set: { used: true } });
+            yield Token_1.Token.findByIdAndUpdate(id, { used: true });
+        });
+    }
+    deleteToken({ user_id, code, used }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (user_id)
+                console.log('🚀 ~ file: token.service.ts:70 ~ TokenService ~ deleteToken ~ user_id', user_id);
+            if (code)
+                console.log('🚀 ~ file: token.service.ts:75 ~ TokenService ~ deleteToken ~ code', code);
+            if (used) {
+                yield Token_1.Token.deleteMany({ used: used });
+            }
         });
     }
 }
