@@ -8,9 +8,10 @@ const {
   uploadProfilePic: upProPic,
   deleteProfilePic: delProPic,
   signInUser,
+  changePassword: changePass,
 } = new userService();
 
-const { generatePassRecoveryCode } = new tokenService();
+const { generatePassRecoveryCode, validateTokenCode } = new tokenService();
 
 export async function find(req: Request, res: Response) {
   try {
@@ -44,12 +45,43 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-export async function passwordRecoveryCode(req: Request, res: Response) {
+export async function requestPasswordRecoveryCode(req: Request, res: Response) {
   try {
     let ip: string | string[] =
       req.ip || req.socket.remoteAddress || req.headers['x-forwarded-for'];
 
     const response = await generatePassRecoveryCode(req.body.email, ip);
+    return res.status(200).json({
+      status: 200,
+      message: response,
+    });
+  } catch ({ message }) {
+    console.error(message);
+    return res.status(400).json({
+      status: 400,
+      message: message,
+    });
+  }
+}
+
+export async function validateCode(req: Request, res: Response) {
+  try {
+    const response = await validateTokenCode(req.body.code);
+    return res.status(200).json({
+      status: 200,
+      data: response,
+    });
+  } catch ({ message }) {
+    console.error(message);
+    return res.status(400).json({
+      message: message,
+    });
+  }
+}
+
+export async function changePassword(req: Request, res: Response) {
+  try {
+    const response = await changePass(req.body.user_id, req.body.password);
     return res.status(200).json({
       status: 200,
       data: response,

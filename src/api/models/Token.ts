@@ -5,6 +5,7 @@ export interface IToken {
   code: number;
   user_id: Types.ObjectId;
   used: boolean;
+  checked: boolean;
   created_at: number;
   expire_timestamp: number;
 }
@@ -20,6 +21,10 @@ const TokenSchema = new Schema<IToken>({
     required: [true, 'required user id'],
   },
   used: {
+    type: Boolean,
+    default: false,
+  },
+  checked: {
     type: Boolean,
     default: false,
   },

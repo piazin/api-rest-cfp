@@ -1,16 +1,21 @@
 import { model } from 'mongoose';
 import Joi from 'joi';
-import { User } from '../models/User';
-import { IUser } from '../models/User';
+
+import { User, IUser } from '../models/User';
+import TokenService from './token.service';
 import { ProfilePicSchema, IProfilePic } from '../models/ProfilePic';
-import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
+
 import constantsUser from '../../constants/user.constants';
+
+import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
 import { isIdValid } from '../../utils/isIdValid';
 
 const ProfilePic = model('Profilepic', ProfilePicSchema);
 
+const { isCodeChecked, setCodeUsed } = new TokenService();
+
 const {
-  err: { invalidUser, invalidGoogleFileId },
+  err: { invalidUser, invalidGoogleFileId, userNotFound },
 } = constantsUser;
 
 export class userService {
@@ -53,6 +58,18 @@ export class userService {
       created_at,
       token,
     };
+  }
+
+  async changePassword(user_id: string, password: string) {
+    var codeChecked = await isCodeChecked(user_id);
+    if (!codeChecked) throw new Error('Seu codigo já foi ultilizado');
+
+    var user = await User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
+    if (!user) throw new Error(userNotFound);
+
+    await setCodeUsed(user_id);
+
+    return `Senha alterada`;
   }
 
   async signInUser(emailUser: string, password: string) {
