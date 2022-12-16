@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import config from "../../config/";
+import mongoose from 'mongoose';
+import config from '../../config/';
 
 const {
   db: { url },
@@ -8,7 +8,7 @@ const {
 (async () => {
   try {
     await mongoose.connect(url);
-    console.log("db connected");
+    console.log('db connected');
   } catch (error) {
     console.error(error);
   }

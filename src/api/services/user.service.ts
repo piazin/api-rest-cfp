@@ -60,13 +60,19 @@ export class userService {
     };
   }
 
-  async changePassword(user_id: string, password: string) {
-    var codeChecked = await isCodeChecked(user_id);
-    if (!codeChecked.status) throw new Error('Seu codigo já foi ultilizado');
-    var user = await User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
+  async changePassword(email: string, password: string) {
+    var user = await User.findOne({ email });
     if (!user) throw new Error(userNotFound);
 
-    await setCodeUsed(codeChecked.resCode._id);
+    var codeChecked = await isCodeChecked(user._id);
+    if (!codeChecked.status) throw new Error('Seu codigo já foi ultilizado');
+    var user = await User.findOneAndUpdate(
+      { _id: user._id },
+      { password: password },
+      { new: true }
+    );
+
+    await setCodeUsed(codeChecked.data._id);
 
     return `Senha alterada`;
   }

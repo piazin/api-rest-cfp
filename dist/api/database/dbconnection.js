@@ -18,7 +18,7 @@ const { db: { url }, } = config_1.default;
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose_1.default.connect(url);
-        console.log("db connected");
+        console.log('db connected');
     }
     catch (error) {
         console.error(error);

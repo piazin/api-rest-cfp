@@ -1,13 +1,18 @@
 import fs from 'fs';
+import { resolve } from 'path';
 import { google } from 'googleapis';
 import { IProfilePic } from '../api/models/ProfilePic';
 
 import config from '../config/index';
-const { google_json_key, google_folder_id } = config;
+const { google_folder_id } = config;
+
+const google_json_key = JSON.parse(
+  fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })
+);
 
 const auth = new google.auth.GoogleAuth({
   // keyFile: JSON.stringify(config.googleapikey),
-  credentials: JSON.parse(google_json_key),
+  credentials: google_json_key,
   scopes: ['https://www.googleapis.com/auth/drive'],
 });
 

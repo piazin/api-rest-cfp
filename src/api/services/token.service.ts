@@ -57,14 +57,14 @@ class TokenService {
     return true;
   }
 
-  async isCodeChecked(user_id: string) {
+  async isCodeChecked(user_id: string | Types.ObjectId) {
     var resCode = await Token.findOne({ user_id: user_id, used: false, checked: true });
 
     if (!resCode) throw new Error('Codigo não encontrado ou invalido');
     if (!resCode.checked) throw new Error('Codigo não foi verificado');
     if (resCode.used) throw new Error('Codigo já foi ultilizado');
 
-    return { status: true, resCode };
+    return { status: true, data: resCode };
   }
 
   async setCodeUsed(id: Types.ObjectId | string) {

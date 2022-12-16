@@ -76,14 +76,18 @@ class TokenService {
             yield Token_1.Token.findByIdAndUpdate(id, { used: true });
         });
     }
-    deleteToken({ user_id, code, used }) {
+    deleteToken({ user_id, code, used, expired }) {
         return __awaiter(this, void 0, void 0, function* () {
+            var currentTime = (0, moment_1.default)().unix();
             if (user_id)
                 console.log('🚀 ~ file: token.service.ts:70 ~ TokenService ~ deleteToken ~ user_id', user_id);
             if (code)
                 console.log('🚀 ~ file: token.service.ts:75 ~ TokenService ~ deleteToken ~ code', code);
             if (used) {
-                yield Token_1.Token.deleteMany({ used: used });
+                yield Token_1.Token.deleteMany({ used: true });
+            }
+            if (expired) {
+                yield Token_1.Token.deleteMany({ expire_timestamp: { $lte: currentTime } });
             }
         });
     }

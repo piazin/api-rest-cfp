@@ -17,6 +17,6 @@ const cron_1 = require("cron");
 const token_service_1 = __importDefault(require("../api/services/token.service"));
 const { deleteToken } = new token_service_1.default();
 exports.jobOfDeletingTokens = new cron_1.CronJob('*/5 * * * * ', () => __awaiter(void 0, void 0, void 0, function* () {
-    yield deleteToken({ used: true });
+    yield deleteToken({ used: true, expired: true });
 }));
 //# sourceMappingURL=deleteUsedTokens.js.map

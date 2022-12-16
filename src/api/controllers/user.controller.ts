@@ -81,7 +81,7 @@ export async function validateCode(req: Request, res: Response) {
 
 export async function changePassword(req: Request, res: Response) {
   try {
-    const response = await changePass(req.body.user_id, req.body.password);
+    const response = await changePass(req.body.email, req.body.password);
     return res.status(200).json({
       status: 200,
       data: response,
