@@ -40,7 +40,7 @@ class TokenService {
     var emailSendingStatus = await sendEmail(user.email, user.name, code);
     if (!emailSendingStatus) throw new Error(failSendEmail);
 
-    return `Enviamos um email para ${user.email}`;
+    return `Acabamos de enviar um codigo para o seu endereço de e-mail registrado ${user.email}`;
   }
 
   async validateTokenCode(code: number) {
