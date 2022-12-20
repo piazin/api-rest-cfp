@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import categoryService from '../services/category.service';
 
-const { createService, findAllService } = new categoryService();
+const category = new categoryService();
 
 export async function findAll(req: Request, res: Response) {
   try {
-    const response = await findAllService();
+    const response = await category.findAll();
     return res.status(200).json({
       status: 200,
       data: response,
@@ -21,7 +21,7 @@ export async function findAll(req: Request, res: Response) {
 
 export async function create(req: Request, res: Response) {
   try {
-    const response = await createService(req.body);
+    const response = await category.create(req.body);
     return res.status(201).json({
       status: 201,
       data: response,

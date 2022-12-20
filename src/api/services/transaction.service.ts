@@ -87,7 +87,7 @@ class transactionService {
     return response;
   }
 
-  async find(owner: string, reqQuery: Request) {
+  async findByOwnerID(owner: string, reqQuery: Request) {
     const queryObj = { ...reqQuery.query };
 
     const response = await Transaction.find({ owner: owner }).sort('-created_at');

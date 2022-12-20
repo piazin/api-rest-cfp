@@ -7,7 +7,7 @@ import { ICategory } from '../models/Category';
 const Category = model('Category', CategorySchema);
 
 class categoryService {
-  async createService(categoryObj: ICategory) {
+  async create(categoryObj: ICategory) {
     const response = await Category.create({
       title: categoryObj.title,
       iconName: categoryObj.iconName,
@@ -16,7 +16,7 @@ class categoryService {
     return response;
   }
 
-  async findAllService() {
+  async findAll() {
     const response = await Category.find();
     return response;
   }

@@ -1,12 +1,7 @@
 import { Request, Response } from 'express';
 import transactionsService from '../services/transaction.service';
 
-const {
-  create: createService,
-  find: findService,
-  delete: deleteService,
-  update: updateService,
-} = new transactionsService();
+const transaction = new transactionsService();
 
 interface IRequest extends Request {
   user_id: string;
@@ -14,7 +9,7 @@ interface IRequest extends Request {
 
 export async function getTransactionByUserId(req: IRequest, res: Response) {
   try {
-    const response = await findService(req.params.id, req);
+    const response = await transaction.findByOwnerID(req.params.id, req);
     return res.status(200).json({
       status: 200,
       results: response.results,
@@ -33,7 +28,7 @@ export async function getTransactionByUserId(req: IRequest, res: Response) {
 
 export async function createTransaction(req: Request, res: Response) {
   try {
-    const response = await createService(req.body, req.user.user_id);
+    const response = await transaction.create(req.body, req.user.user_id);
     return res.status(201).json({
       status: 201,
       data: response,
@@ -49,23 +44,23 @@ export async function createTransaction(req: Request, res: Response) {
 
 export async function updateTransaction(req: Request, res: Response) {
   try {
-    const response = await updateService(req.params.id, req.body);
+    const response = await transaction.update(req.params.id, req.body);
     res.status(200).json({
       status: 200,
       data: response,
     });
-  } catch (error) {
-    console.error(error);
+  } catch ({ message }) {
+    console.error(message);
     res.status(400).json({
       status: 400,
-      message: error.message,
+      message: message,
     });
   }
 }
 
 export async function removeTransaction(req: Request, res: Response) {
   try {
-    const response = await deleteService(req.params.id);
+    const response = await transaction.delete(req.params.id);
     res.status(204).json({
       status: 204,
       message: response,

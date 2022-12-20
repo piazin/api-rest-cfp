@@ -1,14 +1,14 @@
 import { model } from 'mongoose';
 import Joi from 'joi';
 
-import { User, IUser } from '../models/User';
 import TokenService from './token.service';
+import { User, IUser } from '../models/User';
 import { ProfilePicSchema, IProfilePic } from '../models/ProfilePic';
 
 import constantsUser from '../../constants/user.constants';
 
-import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
 import { isIdValid } from '../../utils/isIdValid';
+import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
 
 const ProfilePic = model('Profilepic', ProfilePicSchema);
 
