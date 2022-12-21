@@ -45,6 +45,11 @@ export async function create(req: Request, res: Response) {
   }
 }
 
+export async function update(req: Request, res: Response) {
+  try {
+  } catch (error) {}
+}
+
 export async function requestPasswordRecoveryCode(req: Request, res: Response) {
   try {
     let ip: string | string[] =

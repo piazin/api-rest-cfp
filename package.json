@@ -7,7 +7,8 @@
     "start": "NODE_ENV=production node dist/server.js",
     "build": "tsc",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
-    "test": "jest"
+    "test": "jest",
+    "test:script": "./src/scripts/loop_test.sh"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",

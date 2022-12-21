@@ -4,8 +4,9 @@ import { Types } from 'mongoose';
 import seedrandom from 'seedrandom';
 import { Token } from '../models/Token';
 import { User } from '../models/User';
-import constants from '../../constants/user.constants';
 import sendEmail from '../../utils/sendEmail';
+import constants from '../../constants/user.constants';
+import { generateRandomCode } from '../../utils/generateRandomCode';
 
 const {
   err: { userNotFound, failSendEmail },
@@ -27,17 +28,12 @@ class TokenService {
 
     await Token.deleteMany({ user_id: user._id, used: false });
 
-    var code: number;
-    var codeString: string;
+    var code: number = generateRandomCode();
     var expire_timestamp: number = moment().add(5, 'minutes').unix();
-    var randomBytes = crypto.randomBytes(64).toString('base64');
-    var generateCode = seedrandom(randomBytes, { entropy: true });
-    codeString = generateCode().toString().replace('0', '');
-    code = parseInt(codeString.substring(3, 9));
 
     await Token.create({ code, user_id: user._id, expire_timestamp });
 
-    var emailSendingStatus = await sendEmail(user.email, user.name, code);
+    var emailSendingStatus = await sendEmail(user.email, user.name, code, ip.slice(7));
     if (!emailSendingStatus) throw new Error(failSendEmail);
 
     return `Acabamos de enviar um codigo para o seu endereço de e-mail registrado ${user.email}`;

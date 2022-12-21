@@ -1,7 +1,12 @@
 import nodemailer from 'nodemailer';
 import config from '../config/index';
 
-export default async function sendEmail(user_email: string, user_name: string, code: number) {
+export default async function sendEmail(
+  user_email: string,
+  user_name: string,
+  code: number,
+  ip?: string | string[]
+) {
   try {
     let trasporter = nodemailer.createTransport({
       service: 'gmail',
@@ -21,6 +26,7 @@ export default async function sendEmail(user_email: string, user_name: string, c
       html: `
       <p>Olá <strong>${user_name}</strong></p>
       <p>Nós recebemos uma solicitação para um código de uso único para a sua conta.</p>
+      <span>${ip}</span>
       <p>Seu código de uso único é: <strong>${code}</strong></p>
       <p>Obrigado,</p>
       <p>Equipe de contas CFP</p>
