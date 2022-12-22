@@ -3,6 +3,7 @@ import { Schema } from 'mongoose';
 export interface ICategory {
   title: string;
   iconName: string;
+  type: 'expense' | 'income';
 }
 
 export const CategorySchema = new Schema<ICategory>({
@@ -14,4 +15,5 @@ export const CategorySchema = new Schema<ICategory>({
     type: String,
     required: true,
   },
+  type: String,
 });

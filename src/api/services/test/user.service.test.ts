@@ -1,7 +1,7 @@
 import { connect, connection } from 'mongoose';
-import config from '../../config/index';
-import { IUser } from '../models/User';
-import { userService } from './user.service';
+import config from '../../../config/index';
+import { IUser } from '../../models/User';
+import { userService } from '../user.service';
 const user = new userService();
 
 beforeAll(async () => {
@@ -20,7 +20,7 @@ describe('user service', () => {
   });
 
   it('sign user', async () => {
-    var data = await user.signInUser('ls4803326@gmail.com', 'Piazin25$');
+    var data = await user.signInUser('ls4803326@gmail.com', 'Hamu25$');
     expect(data).toBeTruthy();
   });
 });

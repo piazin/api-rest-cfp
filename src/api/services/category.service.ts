@@ -11,6 +11,7 @@ class categoryService {
     const response = await Category.create({
       title: categoryObj.title,
       iconName: categoryObj.iconName,
+      type: categoryObj.type,
     });
 
     return response;
