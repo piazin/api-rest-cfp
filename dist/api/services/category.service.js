@@ -13,16 +13,17 @@ const mongoose_1 = require("mongoose");
 const Category_1 = require("../models/Category");
 const Category = (0, mongoose_1.model)('Category', Category_1.CategorySchema);
 class categoryService {
-    createService(categoryObj) {
+    create(categoryObj) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield Category.create({
                 title: categoryObj.title,
                 iconName: categoryObj.iconName,
+                type: categoryObj.type,
             });
             return response;
         });
     }
-    findAllService() {
+    findAll() {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield Category.find();
             return response;

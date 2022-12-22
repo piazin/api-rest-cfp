@@ -15,8 +15,8 @@ afterAll(async () => {
 describe('Category Service', () => {
   test('create new category', async () => {
     const data = await category.create({
-      title: 'Outros',
-      iconName: 'apple-icloud',
+      title: 'Investimentos',
+      iconName: 'finance',
       type: 'income',
     });
     expect(data).toBeTruthy();

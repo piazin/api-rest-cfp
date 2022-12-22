@@ -26,12 +26,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userService = void 0;
 const mongoose_1 = require("mongoose");
 const joi_1 = __importDefault(require("joi"));
-const User_1 = require("../models/User");
 const token_service_1 = __importDefault(require("./token.service"));
+const User_1 = require("../models/User");
 const ProfilePic_1 = require("../models/ProfilePic");
 const user_constants_1 = __importDefault(require("../../constants/user.constants"));
-const googleDriveApi_1 = require("../../utils/googleDriveApi");
 const isIdValid_1 = require("../../utils/isIdValid");
+const googleDriveApi_1 = require("../../utils/googleDriveApi");
 const ProfilePic = (0, mongoose_1.model)('Profilepic', ProfilePic_1.ProfilePicSchema);
 const { isCodeChecked, setCodeUsed } = new token_service_1.default();
 const { err: { invalidUser, invalidGoogleFileId, userNotFound }, } = user_constants_1.default;
@@ -73,15 +73,16 @@ class userService {
             };
         });
     }
-    changePassword(user_id, password) {
+    changePassword(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            var codeChecked = yield isCodeChecked(user_id);
-            if (!codeChecked.status)
-                throw new Error('Seu codigo já foi ultilizado');
-            var user = yield User_1.User.findOneAndUpdate({ _id: user_id }, { password: password }, { new: true });
+            var user = yield User_1.User.findOne({ email });
             if (!user)
                 throw new Error(userNotFound);
-            yield setCodeUsed(codeChecked.resCode._id);
+            var codeChecked = yield isCodeChecked(user._id);
+            if (!codeChecked.status)
+                throw new Error('Seu codigo já foi ultilizado');
+            var user = yield User_1.User.findOneAndUpdate({ _id: user._id }, { password: password }, { new: true });
+            yield setCodeUsed(codeChecked.data._id);
             return `Senha alterada`;
         });
     }

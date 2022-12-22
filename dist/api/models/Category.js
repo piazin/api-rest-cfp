@@ -11,5 +11,6 @@ exports.CategorySchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    type: String,
 });
 //# sourceMappingURL=Category.js.map

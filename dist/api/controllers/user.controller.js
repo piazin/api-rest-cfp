@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProfilePic = exports.uploadProfilePic = exports.signIn = exports.changePassword = exports.validateCode = exports.requestPasswordRecoveryCode = exports.create = exports.find = void 0;
+exports.deleteProfilePic = exports.uploadProfilePic = exports.signIn = exports.changePassword = exports.validateCode = exports.requestPasswordRecoveryCode = exports.update = exports.create = exports.find = void 0;
 const user_service_1 = require("../services/user.service");
 const token_service_1 = __importDefault(require("../services/token.service"));
 const { createUser, findOneUserByID, uploadProfilePic: upProPic, deleteProfilePic: delProPic, signInUser, changePassword: changePass, } = new user_service_1.userService();
@@ -55,6 +55,14 @@ function create(req, res) {
     });
 }
 exports.create = create;
+function update(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+        }
+        catch (error) { }
+    });
+}
+exports.update = update;
 function requestPasswordRecoveryCode(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -96,7 +104,7 @@ exports.validateCode = validateCode;
 function changePassword(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield changePass(req.body.user_id, req.body.password);
+            const response = yield changePass(req.body.email, req.body.password);
             return res.status(200).json({
                 status: 200,
                 data: response,

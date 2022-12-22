@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const index_1 = __importDefault(require("../config/index"));
-function sendEmail(user_email, user_name, code) {
+function sendEmail(user_email, user_name, code, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             let trasporter = nodemailer_1.default.createTransport({
@@ -34,6 +34,7 @@ function sendEmail(user_email, user_name, code) {
                 html: `
       <p>Olá <strong>${user_name}</strong></p>
       <p>Nós recebemos uma solicitação para um código de uso único para a sua conta.</p>
+      <span>${ip}</span>
       <p>Seu código de uso único é: <strong>${code}</strong></p>
       <p>Obrigado,</p>
       <p>Equipe de contas CFP</p>

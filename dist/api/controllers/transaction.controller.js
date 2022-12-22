@@ -14,11 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.removeTransaction = exports.updateTransaction = exports.createTransaction = exports.getTransactionByUserId = void 0;
 const transaction_service_1 = __importDefault(require("../services/transaction.service"));
-const { create: createService, find: findService, delete: deleteService, update: updateService, } = new transaction_service_1.default();
+const transaction = new transaction_service_1.default();
 function getTransactionByUserId(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield findService(req.params.id, req);
+            const response = yield transaction.findByOwnerID(req.params.id, req);
             return res.status(200).json({
                 status: 200,
                 results: response.results,
@@ -40,7 +40,7 @@ exports.getTransactionByUserId = getTransactionByUserId;
 function createTransaction(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield createService(req.body, req.user.user_id);
+            const response = yield transaction.create(req.body, req.user.user_id);
             return res.status(201).json({
                 status: 201,
                 data: response,
@@ -59,17 +59,17 @@ exports.createTransaction = createTransaction;
 function updateTransaction(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield updateService(req.params.id, req.body);
+            const response = yield transaction.update(req.params.id, req.body);
             res.status(200).json({
                 status: 200,
                 data: response,
             });
         }
-        catch (error) {
-            console.error(error);
+        catch ({ message }) {
+            console.error(message);
             res.status(400).json({
                 status: 400,
-                message: error.message,
+                message: message,
             });
         }
     });
@@ -78,7 +78,7 @@ exports.updateTransaction = updateTransaction;
 function removeTransaction(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield deleteService(req.params.id);
+            const response = yield transaction.delete(req.params.id);
             res.status(204).json({
                 status: 204,
                 message: response,

@@ -14,11 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.create = exports.findAll = void 0;
 const category_service_1 = __importDefault(require("../services/category.service"));
-const { createService, findAllService } = new category_service_1.default();
+const category = new category_service_1.default();
 function findAll(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield findAllService();
+            const response = yield category.findAll();
             return res.status(200).json({
                 status: 200,
                 data: response,
@@ -37,7 +37,7 @@ exports.findAll = findAll;
 function create(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield createService(req.body);
+            const response = yield category.create(req.body);
             return res.status(201).json({
                 status: 201,
                 data: response,

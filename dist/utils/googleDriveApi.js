@@ -16,10 +16,14 @@ exports.deleteFileGoogleDrive = exports.uploadFileGoogleDrive = void 0;
 const fs_1 = __importDefault(require("fs"));
 const googleapis_1 = require("googleapis");
 const index_1 = __importDefault(require("../config/index"));
-const { google_json_key, google_folder_id } = index_1.default;
+const { google_folder_id } = index_1.default;
+const google_json_key = JSON.parse(process.env.GOOGLE_JSON_KEY);
+// const google_json_key = JSON.parse(
+//   fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })
+// );
 const auth = new googleapis_1.google.auth.GoogleAuth({
     // keyFile: JSON.stringify(config.googleapikey),
-    credentials: JSON.parse(google_json_key),
+    credentials: google_json_key,
     scopes: ['https://www.googleapis.com/auth/drive'],
 });
 const driveService = googleapis_1.google.drive({

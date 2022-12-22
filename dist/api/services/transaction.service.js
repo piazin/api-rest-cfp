@@ -89,7 +89,7 @@ class transactionService {
             return response;
         });
     }
-    find(owner, reqQuery) {
+    findByOwnerID(owner, reqQuery) {
         return __awaiter(this, void 0, void 0, function* () {
             const queryObj = Object.assign({}, reqQuery.query);
             const response = yield Transaction.find({ owner: owner }).sort('-created_at');
