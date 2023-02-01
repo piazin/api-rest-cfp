@@ -6,7 +6,7 @@ export interface ICategory {
   type: 'expense' | 'income';
 }
 
-export const CategorySchema = new Schema<ICategory>({
+export const CategoryModel = new Schema<ICategory>({
   title: {
     type: String,
     required: true,

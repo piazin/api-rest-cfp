@@ -10,7 +10,7 @@ export interface IToken {
   expire_timestamp: number;
 }
 
-const TokenSchema = new Schema<IToken>({
+export const TokenModel = new Schema<IToken>({
   code: {
     type: Number,
     required: true,
@@ -38,4 +38,3 @@ const TokenSchema = new Schema<IToken>({
   },
 });
 
-export const Token = model('Token', TokenSchema);

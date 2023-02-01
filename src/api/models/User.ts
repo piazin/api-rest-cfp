@@ -19,7 +19,7 @@ export interface IUser {
   generateJwt: () => string;
 }
 
-const UserSchema = new Schema<IUser>({
+const UserModel = new Schema<IUser>({
   name: {
     type: String,
     required: true,
@@ -52,13 +52,13 @@ const UserSchema = new Schema<IUser>({
   },
 });
 
-UserSchema.pre('save', async function (next) {
+UserModel.pre('save', async function (next) {
   if (!this.isNew || !this.isModified('password')) return next();
 
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-UserSchema.pre('findOneAndUpdate', async function (next) {
+UserModel.pre('findOneAndUpdate', async function (next) {
   const data: any = this.getUpdate();
   if (!data.password) return next();
 
@@ -66,7 +66,7 @@ UserSchema.pre('findOneAndUpdate', async function (next) {
   next();
 });
 
-UserSchema.methods = {
+UserModel.methods = {
   compareHash(hash: string) {
     return bcrypt.compareSync(hash, this.password);
   },
@@ -76,4 +76,4 @@ UserSchema.methods = {
   },
 };
 
-export const User = model('User', UserSchema);
+export { UserModel };

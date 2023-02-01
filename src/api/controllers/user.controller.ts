@@ -1,21 +1,12 @@
 import { Request, Response } from 'express';
-import { userService } from '../services/user.service';
-import tokenService from '../services/token.service';
+import { userService } from '../services';
+import { tokenService } from '../services';
 
-const {
-  createUser,
-  findOneUserByID,
-  uploadProfilePic: upProPic,
-  deleteProfilePic: delProPic,
-  signInUser,
-  changePassword: changePass,
-} = new userService();
-
-const { generatePassRecoveryCode, validateTokenCode } = new tokenService();
+const { generatePassRecoveryCode, validateTokenCode } = tokenService;
 
 export async function find(req: Request, res: Response) {
   try {
-    var response = await findOneUserByID(req.params.id);
+    var response = await userService.findOneUserByID(req.params.id);
     return res.status(200).json({
       status: 200,
       data: response,
@@ -31,7 +22,7 @@ export async function find(req: Request, res: Response) {
 
 export async function create(req: Request, res: Response) {
   try {
-    const response = await createUser(req.body);
+    const response = await userService.createUser(req.body);
     return res.status(201).json({
       status: 201,
       data: response,
@@ -86,7 +77,7 @@ export async function validateCode(req: Request, res: Response) {
 
 export async function changePassword(req: Request, res: Response) {
   try {
-    const response = await changePass(req.body.email, req.body.password);
+    const response = await userService.changePassword(req.body.email, req.body.password);
     return res.status(200).json({
       status: 200,
       data: response,
@@ -102,7 +93,7 @@ export async function changePassword(req: Request, res: Response) {
 
 export async function signIn(req: Request, res: Response) {
   try {
-    const response = await signInUser(req.body.email, req.body.password);
+    const response = await userService.signInUser(req.body.email, req.body.password);
     return res.status(200).json({
       status: 200,
       message: 'authentication success',
@@ -119,7 +110,7 @@ export async function signIn(req: Request, res: Response) {
 
 export async function uploadProfilePic(req: Request, res: Response) {
   try {
-    const response = await upProPic(req.body.owner, req.file);
+    const response = await userService.uploadProfilePic(req.body.owner, req.file);
     return res.status(200).json({
       status: 200,
       data: {
@@ -137,7 +128,7 @@ export async function uploadProfilePic(req: Request, res: Response) {
 
 export async function deleteProfilePic(req: Request, res: Response) {
   try {
-    const response = await delProPic(req.body.fileId);
+    const response = await userService.deleteProfilePic(req.body.fileId);
     return res.status(204).json({
       status: 204,
       data: response,

@@ -8,9 +8,9 @@ const {
 (async () => {
   try {
     await mongoose.connect(url);
-    console.log('db connected');
+    console.log('💾 -> sequelize connection successfull');
   } catch (error) {
-    console.error(error);
+    console.log('🚀 ~ file: dbconnection.ts:13 ~ error', error);
   }
 })();
 

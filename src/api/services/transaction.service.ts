@@ -1,14 +1,11 @@
 import Joi from 'joi';
-import { model } from 'mongoose';
+import { User } from '../models';
 import { Request } from 'express';
-import constants from '../../constants/transaction.constants';
-import { TransactionSchema } from '../models/Transaction';
-import { User } from '../models/User';
-import { ITransaction } from '../models/Transaction';
-import { isIdValid } from '../../utils/isIdValid';
 import { isOwner } from '../../utils/isOwner';
+import { isIdValid } from '../../utils/isIdValid';
+import { Transaction, ITransaction } from '../models';
+import constants from '../../constants/transaction.constants';
 
-const Transaction = model('Transaction', TransactionSchema);
 const {
   err: { invalidValue, invalidDescription, invalidFields, invalidID, isNotOwner },
 } = constants;

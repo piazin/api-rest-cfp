@@ -1,9 +1,6 @@
-import crypto from 'crypto';
 import moment from 'moment';
 import { Types } from 'mongoose';
-import seedrandom from 'seedrandom';
-import { Token } from '../models/Token';
-import { User } from '../models/User';
+import { User, Token } from '../models';
 import sendEmail from '../../utils/sendEmail';
 import constants from '../../constants/user.constants';
 import { generateRandomCode } from '../../utils/generateRandomCode';
@@ -19,7 +16,7 @@ type TParametersDeleteToken = {
   expired?: boolean;
 };
 
-class TokenService {
+export class TokenService {
   async generatePassRecoveryCode(email: string, ip: string | string[]) {
     if (!email) throw new Error('Email invalido');
 
@@ -85,5 +82,3 @@ class TokenService {
     }
   }
 }
-
-export default TokenService;

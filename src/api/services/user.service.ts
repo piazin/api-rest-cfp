@@ -1,24 +1,16 @@
-import { model } from 'mongoose';
 import Joi from 'joi';
-
-import TokenService from './token.service';
-import { User, IUser } from '../models/User';
-import { ProfilePicSchema, IProfilePic } from '../models/ProfilePic';
-
-import constantsUser from '../../constants/user.constants';
+import { tokenService } from './index';
+import { User, IUser, ProfilePic, IProfilePic } from '../models';
 
 import { isIdValid } from '../../utils/isIdValid';
+import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
-
-const ProfilePic = model('Profilepic', ProfilePicSchema);
-
-const { isCodeChecked, setCodeUsed } = new TokenService();
 
 const {
   err: { invalidUser, invalidGoogleFileId, userNotFound },
 } = constantsUser;
 
-export class userService {
+export class UserService {
   async findOneUserByID(user_id: string) {
     var response: IUser = await User.findOne({ _id: user_id }).select('-password -__v');
     if (!response) return {};
@@ -64,7 +56,7 @@ export class userService {
     var user = await User.findOne({ email });
     if (!user) throw new Error(userNotFound);
 
-    var codeChecked = await isCodeChecked(user._id);
+    var codeChecked = await tokenService.isCodeChecked(user._id);
     if (!codeChecked.status) throw new Error('Seu codigo já foi ultilizado');
     var user = await User.findOneAndUpdate(
       { _id: user._id },
@@ -72,7 +64,7 @@ export class userService {
       { new: true }
     );
 
-    await setCodeUsed(codeChecked.data._id);
+    await tokenService.setCodeUsed(codeChecked.data._id);
 
     return `Senha alterada`;
   }

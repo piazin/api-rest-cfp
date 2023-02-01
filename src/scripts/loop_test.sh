@@ -1,5 +1,5 @@
 #!/bin/bash
-which yarn
+which yarn 
 param1_seq=$1
 param2_quantity=$2
 

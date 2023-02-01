@@ -1,12 +1,6 @@
-import { model } from 'mongoose';
-import { CategorySchema } from '../models/Category';
+import { Category, ICategory } from '../models';
 
-// @types
-import { ICategory } from '../models/Category';
-
-const Category = model('Category', CategorySchema);
-
-class categoryService {
+export class CategoryService {
   async create(categoryObj: ICategory) {
     const response = await Category.create({
       title: categoryObj.title,
@@ -22,5 +16,3 @@ class categoryService {
     return response;
   }
 }
-
-export default categoryService;

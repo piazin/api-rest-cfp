@@ -9,7 +9,7 @@ export interface IProfilePic {
   owner: Types.ObjectId | string;
 }
 
-export const ProfilePicSchema = new Schema<IProfilePic>({
+export const ProfilePicModel = new Schema<IProfilePic>({
   filename: {
     type: String,
     required: [true, 'A Image must have a filename'],

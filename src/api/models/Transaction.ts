@@ -10,25 +10,25 @@ export interface ITransaction {
   owner: Types.ObjectId;
 }
 
-export const TransactionSchema = new Schema<ITransaction>({
+export const TransactionModel = new Schema<ITransaction>({
   value: {
     type: Number,
-    required: [true, "A Transaction must have a value"],
+    required: [true, 'A Transaction must have a value'],
   },
   date: {
     type: String,
-    required: [true, "A Transaction must have a date"],
+    required: [true, 'A Transaction must have a date'],
   },
   description: {
     type: String,
   },
   category: {
     type: Schema.Types.ObjectId,
-    ref: "Category",
+    ref: 'Category',
   },
   type: {
     type: String,
-    required: [true, "A Transaction must have a type"],
+    required: [true, 'A Transaction must have a type'],
   },
   created_at: {
     type: Date,
@@ -36,7 +36,7 @@ export const TransactionSchema = new Schema<ITransaction>({
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: "User",
-    required: [true, "A Transaction must have a owner"],
+    ref: 'User',
+    required: [true, 'A Transaction must have a owner'],
   },
 });
