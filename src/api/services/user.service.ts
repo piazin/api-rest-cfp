@@ -1,19 +1,35 @@
 import Joi from 'joi';
+import { Types } from 'mongoose';
 import { tokenService } from './index';
 import { User, IUser, ProfilePic, IProfilePic } from '../models';
 
 import { isIdValid } from '../../utils/isIdValid';
 import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
+import { Either, left, right } from '../../errors/either';
+import { ValidationError } from '../../errors/error';
 
 const {
   err: { invalidUser, invalidGoogleFileId, userNotFound },
 } = constantsUser;
 
+interface ResponseUserProps {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  balance: number;
+  transactions: string;
+  avatar: object;
+  created_at: Date;
+  token: string;
+}
+
+type ResponseUser = Either<ValidationError, ResponseUserProps>;
+type ResponseChangeUserPassword = Either<ValidationError, string>;
+
 export class UserService {
   async findOneUserByID(user_id: string) {
     var response: IUser = await User.findOne({ _id: user_id }).select('-password -__v');
-    if (!response) return {};
 
     var avatar = await ProfilePic.findOne({ owner: user_id });
     response.avatar = avatar;
@@ -23,24 +39,29 @@ export class UserService {
     return response;
   }
 
-  async createUser(user: IUser) {
+  async createUser(user: IUser): Promise<ResponseUser> {
     const schemaValidation = Joi.object({
-      email: Joi.string().required(),
-      name: Joi.string().min(1).required(),
-      password: Joi.string().min(6).required(),
-    }).error(new Error('all fields required'));
+      email: Joi.string().required().email().error(new Error('O email é obrigatório')),
+      name: Joi.string().min(1).required().error(new Error('O nome é obrigatório')),
+      password: Joi.string()
+        .min(6)
+        .required()
+        .error(new Error('A senha é obrigatória e deve conter pelo menos 6 digitos')),
+    });
 
-    await schemaValidation.validateAsync(user);
+    const { error, value } = await schemaValidation.validate(user);
+    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
 
     const findUser = await User.findOne({ email: user.email });
-    if (findUser) throw new Error('Usuário já cadastrado');
+    if (findUser)
+      return left(new ValidationError({ message: 'Usuário já cadastrado', statusCode: 409 }));
 
     var userCreated = await User.create(user);
     var token = userCreated.generateJwt();
 
     const { _id, name, email, balance, transactions, avatar, created_at } = userCreated;
 
-    return {
+    return right({
       _id,
       name,
       email,
@@ -49,33 +70,36 @@ export class UserService {
       avatar,
       created_at,
       token,
-    };
+    });
   }
 
-  async changePassword(email: string, password: string) {
+  async changePassword(email: string, password: string): Promise<ResponseChangeUserPassword> {
     var user = await User.findOne({ email });
-    if (!user) throw new Error(userNotFound);
+    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     var codeChecked = await tokenService.isCodeChecked(user._id);
-    if (!codeChecked.status) throw new Error('Seu codigo já foi ultilizado');
+
+    if (codeChecked.isLeft())
+      return left(new ValidationError({ message: codeChecked.value.message, statusCode: 400 }));
+
     var user = await User.findOneAndUpdate(
       { _id: user._id },
       { password: password },
       { new: true }
     );
 
-    await tokenService.setCodeUsed(codeChecked.data._id);
+    await tokenService.setCodeUsed(codeChecked.value.data._id);
 
-    return `Senha alterada`;
+    return right('Senha alterada com sucesso!');
   }
 
-  async signInUser(emailUser: string, password: string) {
+  async signInUser(emailUser: string, password: string): Promise<ResponseUser> {
     var user = await User.findOne({ email: emailUser }).select('-__v');
 
-    if (!user) throw { message: 'Usuário não encotrado', statusCode: 401 };
+    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     if (!user.compareHash(password))
-      throw { message: 'E-mail ou senha incorreta', statusCode: 403 };
+      return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
 
     var profilePic = await ProfilePic.findOne({ owner: user._id });
     user.avatar = profilePic;
@@ -84,7 +108,7 @@ export class UserService {
 
     const { _id, name, email, balance, transactions, avatar, created_at } = user;
 
-    return {
+    return right({
       _id,
       name,
       email,
@@ -93,7 +117,7 @@ export class UserService {
       transactions,
       created_at,
       token,
-    };
+    });
   }
 
   async uploadProfilePic(owner: string, avatar: any) {

@@ -1,5 +1,5 @@
 import { model } from 'mongoose';
-import { TokenModel } from './Token';
+import { TokenModel, IToken } from './Token';
 import { UserModel, IUser } from './User';
 import { CategoryModel, ICategory } from './Category';
 import { TransactionModel, ITransaction } from './Transaction';
@@ -19,6 +19,7 @@ export {
   Transaction,
   ITransaction,
   Token,
+  IToken,
   Category,
   ICategory,
 };

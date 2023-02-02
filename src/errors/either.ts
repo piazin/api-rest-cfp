@@ -17,13 +17,25 @@ class Left<L, R> {
 }
 
 class Right<L, R> {
-  readonly value: L;
+  readonly value: R;
 
-  constructor(value: L) {
+  constructor(value: R) {
     this.value = value;
+  }
+
+  isLeft(): this is Left<L, R> {
+    return false;
   }
 
   isRight(): this is Right<L, R> {
     return true;
   }
 }
+
+export const left = <L, R>(l: L): Either<L, R> => {
+  return new Left(l);
+};
+
+export const right = <L, R>(r: R): Either<L, R> => {
+  return new Right(r);
+};

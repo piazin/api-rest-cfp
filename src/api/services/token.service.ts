@@ -1,9 +1,11 @@
 import moment from 'moment';
 import { Types } from 'mongoose';
-import { User, Token } from '../models';
+import { User, Token, IToken } from '../models';
 import sendEmail from '../../utils/sendEmail';
 import constants from '../../constants/user.constants';
 import { generateRandomCode } from '../../utils/generateRandomCode';
+import { Either, left, right } from '../../errors/either';
+import { ValidationError } from '../../errors/error';
 
 const {
   err: { userNotFound, failSendEmail },
@@ -16,12 +18,15 @@ type TParametersDeleteToken = {
   expired?: boolean;
 };
 
+type ResponseToken = Either<ValidationError, string | boolean>;
+type ResponseTokenChecked = Either<ValidationError, { status: true; data: IToken }>;
+
 export class TokenService {
-  async generatePassRecoveryCode(email: string, ip: string | string[]) {
-    if (!email) throw new Error('Email invalido');
+  async generatePassRecoveryCode(email: string, ip: string | string[]): Promise<ResponseToken> {
+    if (!email) return left(new ValidationError({ message: 'Email invalido', statusCode: 400 }));
 
     const user = await User.findOne({ email: email });
-    if (!user) throw new Error(userNotFound);
+    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     await Token.deleteMany({ user_id: user._id, used: false });
 
@@ -31,33 +36,44 @@ export class TokenService {
     await Token.create({ code, user_id: user._id, expire_timestamp });
 
     var emailSendingStatus = await sendEmail(user.email, user.name, code, ip.slice(7));
-    if (!emailSendingStatus) throw new Error(failSendEmail);
+    if (!emailSendingStatus)
+      return left(new ValidationError({ message: failSendEmail, statusCode: 500 }));
 
-    return `Acabamos de enviar um codigo para o seu endereço de e-mail registrado ${user.email}`;
+    return right(
+      `Acabamos de enviar um codigo para o seu endereço de e-mail registrado ${user.email}`
+    );
   }
 
-  async validateTokenCode(code: number) {
-    if (!code) throw new Error('Codigo invalido');
-
+  async validateTokenCode(code: number): Promise<ResponseToken> {
     var resCode = await Token.findOne({ code });
-    if (!resCode) throw new Error('Codigo invalido');
-    if (resCode.used) throw new Error('Codigo já ultilizado');
+    if (!resCode) return left(new ValidationError({ message: 'Codigo invalido', statusCode: 403 }));
+
+    if (resCode.used)
+      return left(new ValidationError({ message: 'Codigo já ultilizado', statusCode: 400 }));
 
     var currentTime: number = moment().unix();
-    if (resCode.expire_timestamp < currentTime) throw new Error('Codigo expirado');
+    if (resCode.expire_timestamp < currentTime)
+      return left(new ValidationError({ message: 'Codigo expirado', statusCode: 400 }));
 
     await resCode.updateOne({ checked: true });
-    return true;
+    return right(true);
   }
 
-  async isCodeChecked(user_id: string | Types.ObjectId) {
-    var resCode = await Token.findOne({ user_id: user_id, used: false, checked: true });
+  async isCodeChecked(user_id: string | Types.ObjectId): Promise<ResponseTokenChecked> {
+    var resCode = await Token.findOne({ user_id: user_id });
 
-    if (!resCode) throw new Error('Codigo não encontrado ou invalido');
-    if (!resCode.checked) throw new Error('Codigo não foi verificado');
-    if (resCode.used) throw new Error('Codigo já foi ultilizado');
+    if (!resCode)
+      return left(
+        new ValidationError({ message: 'Codigo não encontrado ou invalido', statusCode: 400 })
+      );
 
-    return { status: true, data: resCode };
+    if (!resCode.checked)
+      return left(new ValidationError({ message: 'Codigo não foi verificado', statusCode: 400 }));
+
+    if (resCode.used)
+      return left(new ValidationError({ message: 'Codigo já foi ultilizado', statusCode: 400 }));
+
+    return right({ status: true, data: resCode });
   }
 
   async setCodeUsed(id: Types.ObjectId | string) {

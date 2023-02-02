@@ -6,6 +6,7 @@ export function errorRequestHandler(
   res: Response,
   next: NextFunction
 ) {
+  console.log('passou');
   if (err) {
     console.log('🚀 ~ file: errorRequestHandler.ts:10 ~ errorRequestHandler ~ err', err);
     return res.status(400).json({

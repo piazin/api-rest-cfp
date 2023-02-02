@@ -2,6 +2,7 @@ import { Schema, Types, model } from 'mongoose';
 import moment from 'moment';
 
 export interface IToken {
+  _id?: string | Types.ObjectId;
   code: number;
   user_id: Types.ObjectId;
   used: boolean;

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { responseInternalError } from '../../errors/responseInternalError';
 import { categoryService } from '../services';
 
 export async function findAll(req: Request, res: Response) {
@@ -9,26 +10,23 @@ export async function findAll(req: Request, res: Response) {
       data: response,
     });
   } catch ({ message }) {
-    console.error(message);
-    return res.status(500).json({
-      status: 500,
-      message: message,
-    });
+    responseInternalError(res);
   }
 }
 
 export async function create(req: Request, res: Response) {
   try {
     const response = await categoryService.create(req.body);
-    return res.status(201).json({
-      status: 201,
-      data: response,
-    });
-  } catch ({ message }) {
-    console.error(message);
-    return res.status(500).json({
-      status: 500,
-      message: message,
-    });
+    return response.isRight()
+      ? res.status(201).json({
+          status: 201,
+          data: response.value,
+        })
+      : res.status(response.value.statusCode).json({
+          status: response.value.statusCode,
+          message: response.value.message,
+        });
+  } catch (error) {
+    responseInternalError(res);
   }
 }
