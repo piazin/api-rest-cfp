@@ -26,6 +26,7 @@ interface ResponseUserProps {
 
 type ResponseUser = Either<ValidationError, ResponseUserProps>;
 type ResponseChangeUserPassword = Either<ValidationError, string>;
+type ResponseUploadProfilePic = Either<ValidationError, IProfilePic>;
 
 export class UserService {
   async findOneUserByID(user_id: string) {
@@ -120,8 +121,9 @@ export class UserService {
     });
   }
 
-  async uploadProfilePic(owner: string, avatar: any) {
-    if (!isIdValid(owner)) throw new Error(invalidUser);
+  async uploadProfilePic(owner: string, avatar: any): Promise<ResponseUploadProfilePic> {
+    if (!isIdValid(owner))
+      return left(new ValidationError({ message: invalidUser, statusCode: 400 }));
     const profilePicExists = await ProfilePic.findOne({ owner: owner });
 
     if (profilePicExists) {
@@ -137,12 +139,24 @@ export class UserService {
     };
 
     var response = await uploadFileGoogleDrive(avatarFilter);
-    if (!response) throw new Error('Não foi possivel fazer o upload');
+    if (!response)
+      return left(
+        new ValidationError({ message: 'Não foi possivel fazer o upload', statusCode: 500 })
+      );
 
     avatarFilter.url = `https://drive.google.com/uc?export=view&id=${response.id}`;
     avatarFilter.googleFileId = response.id;
 
-    return await ProfilePic.create(avatarFilter);
+    const avatarCreated = await ProfilePic.create(avatarFilter);
+
+    return right({
+      url: avatarCreated.url,
+      size: avatarCreated.size,
+      owner: avatarCreated.owner,
+      mimetype: avatarCreated.mimetype,
+      filename: avatarCreated.filename,
+      googleFileId: avatarCreated.googleFileId,
+    });
   }
 
   async deleteProfilePic(fileId: string) {

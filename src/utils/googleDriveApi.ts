@@ -51,7 +51,9 @@ export async function uploadFileGoogleDrive(fileInfo: IProfilePic) {
   }
 }
 
-export async function deleteFileGoogleDrive(fileId: string) {
+export async function deleteFileGoogleDrive(
+  fileId: string
+): Promise<{ status: number; data: any }> {
   try {
     const response = await driveService.files.delete({
       fileId: fileId,

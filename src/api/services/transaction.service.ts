@@ -5,13 +5,19 @@ import { isOwner } from '../../utils/isOwner';
 import { isIdValid } from '../../utils/isIdValid';
 import { Transaction, ITransaction } from '../models';
 import constants from '../../constants/transaction.constants';
+import { Either, left, right } from '../../errors/either';
+import { ValidationError } from '../../errors/error';
 
 const {
   err: { invalidValue, invalidDescription, invalidFields, invalidID, isNotOwner },
 } = constants;
 
+type ResponseTransaction = Either<ValidationError, ITransaction>;
+type ResponseTransactionVoid = Either<ValidationError, void | string>;
+type ResponseTransactionArray = Either<ValidationError, Array<ITransaction>>;
+
 class transactionService {
-  async create(transaction: ITransaction, user_id: string) {
+  async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {
     const validationSchema = Joi.object({
       value: Joi.number().required().error(new Error(invalidValue)),
       description: Joi.string().min(1).max(100).required().error(new Error(invalidDescription)),
@@ -20,14 +26,24 @@ class transactionService {
       owner: Joi.string().required().error(new Error(invalidFields)),
       type: Joi.string().required().error(new Error(invalidFields)),
     });
-    await validationSchema.validateAsync(transaction);
+    const { error, value } = await validationSchema.validate(transaction);
+    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+
+    if (!user_id)
+      return left(new ValidationError({ message: 'user id required', statusCode: 400 }));
+
+    if (!isIdValid(user_id))
+      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
     var totalBalance: number;
+    transaction.owner = user_id;
     var { balance } = await User.findById(user_id);
 
     if (transaction.type != 'expense' && transaction.type != 'income')
-      throw new Error('invalid type');
-    if (balance === null || balance === undefined) throw new Error('invalid balance');
+      return left(new ValidationError({ message: 'invalid type', statusCode: 400 }));
+
+    if (balance === null || balance === undefined)
+      return left(new ValidationError({ message: 'invalid type', statusCode: 400 }));
 
     totalBalance =
       transaction.type == 'expense'
@@ -37,21 +53,32 @@ class transactionService {
     await User.findByIdAndUpdate(user_id, { balance: totalBalance }, { new: true });
 
     const response = await Transaction.create(transaction);
-    return response;
+    return right({
+      _id: response._id,
+      value: response.value,
+      category: response.category,
+      description: response.description,
+      date: response.date,
+      owner: response.owner,
+      type: response.type,
+      created_at: response.created_at,
+    });
   }
 
-  async update(id: string, transactionUpdate: ITransaction) {
-    if (!id || !isIdValid(id)) throw new Error(invalidID);
+  async update(id: string, transactionUpdate: ITransaction): Promise<ResponseTransaction> {
+    if (!id || !isIdValid(id))
+      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
     const transactionRes: ITransaction = await Transaction.findById(id);
 
-    if (!transactionRes) throw new Error(invalidID);
+    if (!transactionRes) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
     if (!isOwner(transactionUpdate.owner, transactionRes.owner))
-      throw { status: 401, message: isNotOwner };
+      return left(new ValidationError({ message: isNotOwner, statusCode: 401 }));
 
     var totalBalance: number;
     var { balance } = await User.findById(transactionRes.owner);
-    if (balance === null || balance === undefined) throw new Error('invalid balance');
+    if (balance === null || balance === undefined)
+      return left(new ValidationError({ message: 'invalid balance', statusCode: 400 }));
 
     balance =
       transactionUpdate.type == 'expense'
@@ -65,33 +92,49 @@ class transactionService {
 
     await User.findByIdAndUpdate(transactionRes.owner, { balance: totalBalance }, { new: true });
     const response = await Transaction.findByIdAndUpdate(id, transactionUpdate, { new: true });
-    return response;
+    return right({
+      _id: response._id,
+      value: response.value,
+      category: response.category,
+      description: response.description,
+      date: response.date,
+      owner: response.owner,
+      type: response.type,
+      created_at: response.created_at,
+    });
   }
 
-  async delete(id: string) {
-    if (!id || !isIdValid(id)) throw new Error(invalidID);
+  async delete(id: string): Promise<ResponseTransactionVoid> {
+    if (!id || !isIdValid(id))
+      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
     const transactionRes: ITransaction = await Transaction.findById(id);
-    if (!transactionRes) throw new Error(invalidID);
+    if (!transactionRes) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    if (!isOwner('634dee1f21a851fa2c1cb153', transactionRes.owner))
-      throw { status: 401, message: isNotOwner };
+    if (!isOwner('63a0fd76204d8996c1d87a5a', transactionRes.owner))
+      return left(new ValidationError({ message: isNotOwner, statusCode: 401 }));
 
     const response = await Transaction.findByIdAndDelete(id);
 
-    if (!response) throw new Error(invalidID);
+    if (!response) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    return response;
+    return right('sucess');
   }
 
-  async findByOwnerID(owner: string, reqQuery: Request) {
+  async findByOwnerID(owner: string, reqQuery: Request): Promise<ResponseTransactionArray> {
     const queryObj = { ...reqQuery.query };
+    var transactions: Array<ITransaction> = [];
+
+    if (!isIdValid(owner))
+      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
     const response = await Transaction.find({ owner: owner }).sort('-created_at');
-    return {
-      data: response,
-      results: response.length,
-    };
+
+    response.forEach((transaction) => {
+      transactions = [...transactions, transaction];
+    });
+
+    return right(transactions);
   }
 }
 

@@ -1,13 +1,14 @@
 import { Schema, Types } from "mongoose";
 
 export interface ITransaction {
+  _id?: string | Types.ObjectId;
   value: number;
   date: String;
   description: string;
   type: string;
   created_at: Date;
   category: Types.ObjectId;
-  owner: Types.ObjectId;
+  owner: Types.ObjectId | string;
 }
 
 export const TransactionModel = new Schema<ITransaction>({

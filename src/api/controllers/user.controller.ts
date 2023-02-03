@@ -70,18 +70,12 @@ export async function signIn(req: Request, res: Response) {
 }
 
 export async function uploadProfilePic(req: Request, res: Response) {
-  try {
-    const response = await userService.uploadProfilePic(req.body.owner, req.file);
-    return res.status(200).json({
-      status: 200,
-      data: {
-        avatar: response,
-      },
-    });
-  } catch ({ message }) {
-    console.error(message);
-    responseInternalError(res);
-  }
+  const response = await userService.uploadProfilePic(req.body.owner, req.file);
+  return response.isRight()
+    ? res.status(200).json({ status: 200, data: response.value })
+    : res
+        .status(response.value.statusCode)
+        .json({ status: response.value.statusCode, message: response.value.message });
 }
 
 export async function deleteProfilePic(req: Request, res: Response) {
