@@ -31,6 +31,7 @@ type ResponseUploadProfilePic = Either<ValidationError, IProfilePic>;
 export class UserService {
   async findOneUserByID(user_id: string) {
     var response: IUser = await User.findOne({ _id: user_id }).select('-password -__v');
+    if (!response) return null;
 
     var avatar = await ProfilePic.findOne({ owner: user_id });
     response.avatar = avatar;

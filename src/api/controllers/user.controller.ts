@@ -13,6 +13,7 @@ export async function find(req: Request, res: Response) {
       data: response,
     });
   } catch ({ message }) {
+    console.error('🚀 ~ file: user.controller.ts:16 ~ find ~ message', message);
     responseInternalError(res);
   }
 }
