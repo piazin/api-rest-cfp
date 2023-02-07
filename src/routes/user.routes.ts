@@ -26,4 +26,7 @@ router.route('/change-password').patch(changePassword);
 router.route('/verify-reset-code').post(verifyResetCode);
 router.route('/password-reset-request').post(requestPasswordRecoveryCode);
 
-router.route('/avatar').post(upload.single('avatar'), uploadProfilePic).delete(deleteProfilePic);
+router
+  .route('/avatar')
+  .post(auth, upload.single('avatar'), uploadProfilePic)
+  .delete(auth, deleteProfilePic);
