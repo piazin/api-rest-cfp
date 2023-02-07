@@ -5,7 +5,7 @@ import { User, IUser, ProfilePic, IProfilePic } from '../models';
 
 import { isIdValid } from '../../utils/isIdValid';
 import constantsUser from '../../constants/user.constants';
-import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../utils/googleDriveApi';
+import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../apis/googleDriveApi';
 import { Either, left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
 
@@ -21,24 +21,30 @@ interface ResponseUserProps {
   transactions: string;
   avatar: object;
   created_at: Date;
-  token: string;
+  token?: string;
 }
 
 type ResponseUser = Either<ValidationError, ResponseUserProps>;
+type ResponseUserFind = Either<ValidationError, IUser>;
 type ResponseChangeUserPassword = Either<ValidationError, string>;
 type ResponseUploadProfilePic = Either<ValidationError, IProfilePic>;
 
 export class UserService {
-  async findOneUserByID(user_id: string) {
+  async findOneUserByID(user_id: string): Promise<ResponseUserFind> {
+    if (!isIdValid(user_id))
+      return left(
+        new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 400 })
+      );
+
     var response: IUser = await User.findOne({ _id: user_id }).select('-password -__v');
-    if (!response) return null;
+    if (!response) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     var avatar = await ProfilePic.findOne({ owner: user_id });
     response.avatar = avatar;
 
     response.transactions = `http://localhost:8080/api/v1/transaction/${response._id}`;
 
-    return response;
+    return right(response);
   }
 
   async createUser(user: IUser): Promise<ResponseUser> {
@@ -95,7 +101,7 @@ export class UserService {
     return right('Senha alterada com sucesso!');
   }
 
-  async signInUser(emailUser: string, password: string): Promise<ResponseUser> {
+  async loginUser(emailUser: string, password: string): Promise<ResponseUser> {
     var user = await User.findOne({ email: emailUser }).select('-__v');
 
     if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));

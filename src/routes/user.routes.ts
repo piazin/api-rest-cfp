@@ -5,8 +5,8 @@ import {
   find,
   uploadProfilePic,
   deleteProfilePic,
-  signIn,
-  validateCode,
+  login,
+  verifyResetCode,
   changePassword,
   requestPasswordRecoveryCode,
 } from '../api/controllers/user.controller';
@@ -19,11 +19,11 @@ const upload = multer(multerConfig);
 export const router = Router();
 
 router.route('/:id').get(find);
-router.route('/').post(create);
-router.route('/authenticate').post(signIn);
+router.route('/login').post(login);
+router.route('/register').post(create);
 
 router.route('/change-password').patch(changePassword);
-router.route('/verify-reset-code').post(validateCode);
+router.route('/verify-reset-code').post(verifyResetCode);
 router.route('/password-reset-request').post(requestPasswordRecoveryCode);
 
 router.route('/avatar').post(upload.single('avatar'), uploadProfilePic).delete(deleteProfilePic);

@@ -23,7 +23,6 @@ class transactionService {
       description: Joi.string().min(1).max(100).required().error(new Error(invalidDescription)),
       category: Joi.string().required().error(new Error(invalidFields)),
       date: Joi.date().required().error(new Error(invalidFields)),
-      owner: Joi.string().required().error(new Error(invalidFields)),
       type: Joi.string().required().error(new Error(invalidFields)),
     });
     const { error, value } = await validationSchema.validate(transaction);

@@ -1,11 +1,11 @@
 import moment from 'moment';
 import { Types } from 'mongoose';
+import { sendEmailService } from '.';
 import { User, Token, IToken } from '../models';
-import sendEmail from '../../utils/sendEmail';
-import constants from '../../constants/user.constants';
-import { generateRandomCode } from '../../utils/generateRandomCode';
-import { Either, left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
+import constants from '../../constants/user.constants';
+import { Either, left, right } from '../../errors/either';
+import { generateRandomCode } from '../../helpers/generateRandomCode';
 
 const {
   err: { userNotFound, failSendEmail },
@@ -35,7 +35,12 @@ export class TokenService {
 
     await Token.create({ code, user_id: user._id, expire_timestamp });
 
-    var emailSendingStatus = await sendEmail(user.email, user.name, code, ip.slice(7));
+    var emailSendingStatus = await sendEmailService.execute({
+      user_email: user.email,
+      user_name: user.name,
+      code,
+      ip: ip.slice(7),
+    });
     if (!emailSendingStatus)
       return left(new ValidationError({ message: failSendEmail, statusCode: 500 }));
 

@@ -6,16 +6,13 @@ import { tokenService } from '../services';
 const { generatePassRecoveryCode, validateTokenCode } = tokenService;
 
 export async function find(req: Request, res: Response) {
-  try {
-    var response = await userService.findOneUserByID(req.params.id);
-    return res.status(200).json({
-      status: 200,
-      data: response,
-    });
-  } catch ({ message }) {
-    console.error('🚀 ~ file: user.controller.ts:16 ~ find ~ message', message);
-    responseInternalError(res);
-  }
+  var response = await userService.findOneUserByID(req.params.id);
+  return response.isRight()
+    ? res.status(200).json({ status: 200, data: response.value })
+    : res.status(response.value.statusCode).json({
+        status: response.value.statusCode,
+        message: response.value.message,
+      });
 }
 
 export async function create(req: Request, res: Response) {
@@ -43,7 +40,7 @@ export async function requestPasswordRecoveryCode(req: Request, res: Response) {
         .json({ status: response.value.statusCode, message: response.value.message });
 }
 
-export async function validateCode(req: Request, res: Response) {
+export async function verifyResetCode(req: Request, res: Response) {
   const response = await validateTokenCode(req.body.code);
   return response.isRight()
     ? res.status(200).json({ status: 200, message: response.value })
@@ -61,8 +58,8 @@ export async function changePassword(req: Request, res: Response) {
         .json({ status: response.value.statusCode, message: response.value.message });
 }
 
-export async function signIn(req: Request, res: Response) {
-  const response = await userService.signInUser(req.body.email, req.body.password);
+export async function login(req: Request, res: Response) {
+  const response = await userService.loginUser(req.body.email, req.body.password);
   return response.isRight()
     ? res.status(201).json({ status: 201, message: 'authentication success', data: response.value })
     : res
