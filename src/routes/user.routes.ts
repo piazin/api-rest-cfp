@@ -1,11 +1,9 @@
 import { Router } from 'express';
 import multer from 'multer';
 import {
-  create,
   find,
   uploadProfilePic,
   deleteProfilePic,
-  login,
   verifyResetCode,
   changePassword,
   requestPasswordRecoveryCode,
@@ -18,15 +16,13 @@ const upload = multer(multerConfig);
 
 export const router = Router();
 
-router.route('/:id').get(find);
-router.route('/login').post(login);
-router.route('/register').post(create);
+router.route('/user/:id').get(find);
 
-router.route('/change-password').patch(changePassword);
-router.route('/verify-reset-code').post(verifyResetCode);
-router.route('/password-reset-request').post(requestPasswordRecoveryCode);
+router.route('/user/change-password').patch(changePassword);
+router.route('/user/verify-reset-code').post(verifyResetCode);
+router.route('/user/password-reset-request').post(requestPasswordRecoveryCode);
 
 router
-  .route('/avatar')
+  .route('/user/avatar')
   .post(auth, upload.single('avatar'), uploadProfilePic)
   .delete(auth, deleteProfilePic);

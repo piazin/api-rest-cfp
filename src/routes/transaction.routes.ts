@@ -10,5 +10,9 @@ import auth from '../api/middlewares/auth';
 
 export const router = Router();
 
-router.route('/').post(auth, createTransaction);
-router.route('/:id').get(getTransactionByUserId).delete(removeTransaction).put(updateTransaction);
+router.route('/transaction').post(auth, createTransaction);
+router
+  .route('/transaction/:id')
+  .get(auth, getTransactionByUserId)
+  .delete(auth, removeTransaction)
+  .put(auth, updateTransaction);

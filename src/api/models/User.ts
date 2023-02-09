@@ -72,7 +72,7 @@ UserModel.methods = {
   },
 
   generateJwt() {
-    return jwt.sign({ user_id: this._id }, jwt_secret, { expiresIn: '7d' });
+    return jwt.sign({ id: this._id }, jwt_secret, { expiresIn: '7d' });
   },
 };
 

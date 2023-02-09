@@ -30,24 +30,33 @@ type ResponseChangeUserPassword = Either<ValidationError, string>;
 type ResponseUploadProfilePic = Either<ValidationError, IProfilePic>;
 
 export class UserService {
-  async findOneUserByID(user_id: string): Promise<ResponseUserFind> {
+  async findById(user_id: string): Promise<ResponseUserFind> {
     if (!isIdValid(user_id))
       return left(
         new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 400 })
       );
 
-    var response: IUser = await User.findOne({ _id: user_id }).select('-password -__v');
-    if (!response) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
+    var user = await User.findOne({ _id: user_id }).select('-password -__v');
+    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     var avatar = await ProfilePic.findOne({ owner: user_id });
-    response.avatar = avatar;
+    user.avatar = avatar;
 
-    response.transactions = `http://localhost:8080/api/v1/transaction/${response._id}`;
-
-    return right(response);
+    return right(user);
   }
 
-  async createUser(user: IUser): Promise<ResponseUser> {
+  async findByEmail(email: string): Promise<ResponseUserFind> {
+    var user = await User.findOne({ email }).select('-password, -__v');
+    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
+
+    var avatar = await ProfilePic.findOne({ owner: user._id });
+    user.avatar = avatar;
+
+    return right(user);
+  }
+
+  async create(user: IUser): Promise<ResponseUser> {
+    console.log('🚀 ~ file: user.service.ts:59 ~ UserService ~ create ~ user', user);
     const schemaValidation = Joi.object({
       email: Joi.string().required().email().error(new Error('O email é obrigatório')),
       name: Joi.string().min(1).required().error(new Error('O nome é obrigatório')),
@@ -60,11 +69,15 @@ export class UserService {
     const { error, value } = await schemaValidation.validate(user);
     if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
 
-    const findUser = await User.findOne({ email: user.email });
-    if (findUser)
+    const userAlreadyExists = await User.findOne({ email: user.email });
+    if (userAlreadyExists)
       return left(new ValidationError({ message: 'Usuário já cadastrado', statusCode: 409 }));
 
     var userCreated = await User.create(user);
+
+    userCreated.transactions = `http://localhost:8080/api/v1/transaction/${userCreated._id}`;
+    await userCreated.save();
+
     var token = userCreated.generateJwt();
 
     const { _id, name, email, balance, transactions, avatar, created_at } = userCreated;
@@ -99,33 +112,6 @@ export class UserService {
     await tokenService.setCodeUsed(codeChecked.value.data._id);
 
     return right('Senha alterada com sucesso!');
-  }
-
-  async loginUser(emailUser: string, password: string): Promise<ResponseUser> {
-    var user = await User.findOne({ email: emailUser }).select('-__v');
-
-    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
-
-    if (!user.compareHash(password))
-      return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
-
-    var profilePic = await ProfilePic.findOne({ owner: user._id });
-    user.avatar = profilePic;
-
-    const token = user.generateJwt();
-
-    const { _id, name, email, balance, transactions, avatar, created_at } = user;
-
-    return right({
-      _id,
-      name,
-      email,
-      balance,
-      avatar,
-      transactions,
-      created_at,
-      token,
-    });
   }
 
   async uploadProfilePic(owner: string, avatar: any): Promise<ResponseUploadProfilePic> {

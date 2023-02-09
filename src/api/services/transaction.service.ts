@@ -64,33 +64,37 @@ class transactionService {
     });
   }
 
-  async update(id: string, transactionUpdate: ITransaction): Promise<ResponseTransaction> {
-    if (!id || !isIdValid(id))
+  async update(
+    id: string,
+    user_id: string,
+    newTransactionData: ITransaction
+  ): Promise<ResponseTransaction> {
+    if (!isIdValid(user_id) || !isIdValid(id))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    const transactionRes: ITransaction = await Transaction.findById(id);
+    const transactionExisting = await Transaction.findById(id);
 
-    if (!transactionRes) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
-    if (!isOwner(transactionUpdate.owner, transactionRes.owner))
+    if (!transactionExisting)
+      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    if (!isOwner(user_id, transactionExisting.owner))
       return left(new ValidationError({ message: isNotOwner, statusCode: 401 }));
 
-    var totalBalance: number;
-    var { balance } = await User.findById(transactionRes.owner);
-    if (balance === null || balance === undefined)
+    var user = await User.findById(transactionExisting.owner);
+    if (user.balance === null || user.balance === undefined)
       return left(new ValidationError({ message: 'invalid balance', statusCode: 400 }));
 
-    balance =
-      transactionUpdate.type == 'expense'
-        ? (balance * 100 - transactionUpdate.value * 100) / 100
-        : (balance * 100 + transactionUpdate.value * 100) / 100;
+    user.balance =
+      transactionExisting.type == 'expense'
+        ? (user.balance * 100 + transactionExisting.value * 100) / 100
+        : (user.balance * 100 - transactionExisting.value * 100) / 100;
 
-    totalBalance =
-      transactionUpdate.type == 'expense'
-        ? (balance * 100 - transactionUpdate.value * 100) / 100
-        : (balance * 100 + transactionUpdate.value * 100) / 100;
+    user.balance =
+      newTransactionData.type == 'expense'
+        ? (user.balance * 100 - newTransactionData.value * 100) / 100
+        : (user.balance * 100 + newTransactionData.value * 100) / 100;
 
-    await User.findByIdAndUpdate(transactionRes.owner, { balance: totalBalance }, { new: true });
-    const response = await Transaction.findByIdAndUpdate(id, transactionUpdate, { new: true });
+    await user.save();
+    const response = await Transaction.findByIdAndUpdate(id, newTransactionData, { new: true });
     return right({
       _id: response._id,
       value: response.value,
@@ -103,29 +107,44 @@ class transactionService {
     });
   }
 
-  async delete(id: string): Promise<ResponseTransactionVoid> {
-    if (!id || !isIdValid(id))
+  async delete(id: string, user_id: string): Promise<ResponseTransactionVoid> {
+    if (!isIdValid(id) || !isIdValid(user_id))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    const transactionRes: ITransaction = await Transaction.findById(id);
-    if (!transactionRes) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    const transactionExisting = await Transaction.findById(id);
+    if (!transactionExisting)
+      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    if (!isOwner('63a0fd76204d8996c1d87a5a', transactionRes.owner))
-      return left(new ValidationError({ message: isNotOwner, statusCode: 401 }));
+    if (!isOwner(user_id, transactionExisting.owner))
+      return left(new ValidationError({ message: isNotOwner, statusCode: 403 }));
 
     const response = await Transaction.findByIdAndDelete(id);
-
     if (!response) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+
+    const user = await User.findById(user_id);
+    user.balance =
+      transactionExisting.type == 'expense'
+        ? (user.balance * 100 + transactionExisting.value * 100) / 100
+        : (user.balance * 100 - transactionExisting.value * 100) / 100;
+
+    await user.save();
 
     return right('sucess');
   }
 
-  async findByOwnerID(owner: string, reqQuery: Request): Promise<ResponseTransactionArray> {
+  async findByOwnerId(
+    owner: string,
+    userId: string,
+    reqQuery: Request
+  ): Promise<ResponseTransactionArray> {
     const queryObj = { ...reqQuery.query };
     var transactions: Array<ITransaction> = [];
 
     if (!isIdValid(owner))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+
+    if (!isOwner(owner, userId))
+      return left(new ValidationError({ message: isNotOwner, statusCode: 403 }));
 
     const response = await Transaction.find({ owner: owner }).sort('-created_at');
 
