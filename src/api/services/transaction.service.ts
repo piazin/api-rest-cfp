@@ -1,15 +1,15 @@
-import Joi from 'joi';
 import { User } from '../models';
 import { Request } from 'express';
 import { isOwner } from '../../utils/isOwner';
 import { isIdValid } from '../../utils/isIdValid';
-import { Transaction, ITransaction } from '../models';
-import constants from '../../constants/transaction.constants';
-import { Either, left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
+import { Transaction, ITransaction } from '../models';
+import { Either, left, right } from '../../errors/either';
+import constants from '../../constants/transaction.constants';
+import { validateTransactionData } from '../../helpers/validateTransactionData';
 
 const {
-  err: { invalidValue, invalidDescription, invalidFields, invalidID, isNotOwner },
+  err: { invalidID, isNotOwner },
 } = constants;
 
 type ResponseTransaction = Either<ValidationError, ITransaction>;
@@ -18,38 +18,27 @@ type ResponseTransactionArray = Either<ValidationError, Array<ITransaction>>;
 
 class transactionService {
   async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {
-    const validationSchema = Joi.object({
-      value: Joi.number().required().error(new Error(invalidValue)),
-      description: Joi.string().min(1).max(100).required().error(new Error(invalidDescription)),
-      category: Joi.string().required().error(new Error(invalidFields)),
-      date: Joi.date().required().error(new Error(invalidFields)),
-      type: Joi.string().required().error(new Error(invalidFields)),
-    });
-    const { error, value } = await validationSchema.validate(transaction);
-    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+    const { isValid, err_message } = validateTransactionData(transaction);
+    if (!isValid) return left(new ValidationError({ message: err_message, statusCode: 400 }));
 
-    if (!user_id)
-      return left(new ValidationError({ message: 'user id required', statusCode: 400 }));
+    if (transaction.type != 'expense' && transaction.type != 'income')
+      return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
 
     if (!isIdValid(user_id))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    var totalBalance: number;
     transaction.owner = user_id;
-    var { balance } = await User.findById(user_id);
+    var user = await User.findById(user_id);
 
-    if (transaction.type != 'expense' && transaction.type != 'income')
-      return left(new ValidationError({ message: 'invalid type', statusCode: 400 }));
+    if (user.balance === null || user.balance === undefined)
+      return left(new ValidationError({ message: 'Saldo inválida', statusCode: 400 }));
 
-    if (balance === null || balance === undefined)
-      return left(new ValidationError({ message: 'invalid type', statusCode: 400 }));
-
-    totalBalance =
+    user.balance =
       transaction.type == 'expense'
-        ? (balance * 100 - transaction.value * 100) / 100
-        : (balance * 100 + transaction.value * 100) / 100;
+        ? (user.balance * 100 - transaction.value * 100) / 100
+        : (user.balance * 100 + transaction.value * 100) / 100;
 
-    await User.findByIdAndUpdate(user_id, { balance: totalBalance }, { new: true });
+    await user.save();
 
     const response = await Transaction.create(transaction);
     return right({
@@ -69,8 +58,14 @@ class transactionService {
     user_id: string,
     newTransactionData: ITransaction
   ): Promise<ResponseTransaction> {
+    const { isValid, err_message } = validateTransactionData(newTransactionData);
+    if (!isValid) return left(new ValidationError({ message: err_message, statusCode: 400 }));
+
     if (!isIdValid(user_id) || !isIdValid(id))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+
+    if (newTransactionData.type !== 'expense' && newTransactionData.type !== 'income')
+      return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
 
     const transactionExisting = await Transaction.findById(id);
 
