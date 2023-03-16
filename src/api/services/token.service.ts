@@ -30,10 +30,10 @@ export class TokenService {
 
     await Token.deleteMany({ user_id: user._id, used: false });
 
-    var code: number = generateRandomCode();
-    var expire_timestamp: number = moment().add(5, 'minutes').unix();
+    const code: number = generateRandomCode();
+    const expireTimestamp: number = moment().add(5, 'minutes').unix();
 
-    await Token.create({ code, user_id: user._id, expire_timestamp });
+    await Token.create({ code, user_id: user._id, expireTimestamp });
 
     var emailSendingStatus = await sendEmailService.execute({
       user_email: user.email,
@@ -50,22 +50,23 @@ export class TokenService {
   }
 
   async validateTokenCode(code: number): Promise<ResponseToken> {
-    var resCode = await Token.findOne({ code });
-    if (!resCode) return left(new ValidationError({ message: 'Codigo invalido', statusCode: 403 }));
+    const token = await Token.findOne({ code });
+    if (!token) return left(new ValidationError({ message: 'Codigo invalido', statusCode: 403 }));
 
-    if (resCode.used)
+    if (token.used)
       return left(new ValidationError({ message: 'Codigo já ultilizado', statusCode: 400 }));
 
-    var currentTime: number = moment().unix();
-    if (resCode.expire_timestamp < currentTime)
+    const currentTime: number = moment().unix();
+    if (token.expire_timestamp < currentTime)
       return left(new ValidationError({ message: 'Codigo expirado', statusCode: 400 }));
 
-    await resCode.updateOne({ checked: true });
+    token.checked = true;
+    await token.save();
     return right(true);
   }
 
   async isCodeChecked(user_id: string | Types.ObjectId): Promise<ResponseTokenChecked> {
-    var resCode = await Token.findOne({ user_id: user_id });
+    const resCode = await Token.findOne({ user_id: user_id });
 
     if (!resCode)
       return left(
