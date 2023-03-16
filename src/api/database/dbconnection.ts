@@ -7,6 +7,7 @@ const {
 
 (async () => {
   try {
+    mongoose.set('strictQuery', true);
     await mongoose.connect(url);
     console.log('💾 -> mongodb connection successfull');
   } catch (error) {
