@@ -56,7 +56,6 @@ export class UserService {
   }
 
   async create(user: IUser): Promise<ResponseUser> {
-    console.log('🚀 ~ file: user.service.ts:59 ~ UserService ~ create ~ user', user);
     const schemaValidation = Joi.object({
       email: Joi.string().required().email().error(new Error('O email é obrigatório')),
       name: Joi.string().min(1).required().error(new Error('O nome é obrigatório')),
