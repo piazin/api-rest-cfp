@@ -19,21 +19,22 @@ type ResponseAuth = Either<ValidationError, ResponseUserProps>;
 
 export class AuthService {
   async login(email: string, password: string): Promise<ResponseAuth> {
-    const user = await userService.findByEmail(email);
+    const userResult = await userService.findByEmail(email);
 
-    if (user.isLeft())
-      return left(
-        new ValidationError({ message: user.value.message, statusCode: user.value.statusCode })
-      );
+    if (userResult.isLeft()) {
+      var { message, statusCode } = userResult.value;
+      return left(new ValidationError({ message, statusCode }));
+    }
 
-    if (!user.value.compareHash(password))
+    const user = userResult.value;
+
+    if (!user.compareHash(password))
       return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
 
-    const profilePic = await ProfilePic.findOne({ owner: user.value._id });
-    user.value.avatar = profilePic;
-
-    const token = user.value.generateJwt();
-    const { _id, name, balance, avatar, transactions } = user.value;
+    const profilePic = await ProfilePic.findOne({ owner: user._id });
+    const { _id, name, balance, transactions } = user;
+    const avatar = profilePic || undefined;
+    const token = user.generateJwt();
 
     return right({
       _id,
