@@ -1,11 +1,6 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
+import { ErrorRequestHandler } from 'express';
 
-export function errorRequestHandler(
-  err: ErrorRequestHandler,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export var errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (err) {
     console.error('🚀 ~ file: errorRequestHandler.ts:10 ~ errorRequestHandler ~ err', err);
     return res.status(400).json({
@@ -14,4 +9,4 @@ export function errorRequestHandler(
     });
   }
   next();
-}
+};

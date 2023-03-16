@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { RequestHandler } from 'express';
 
-export function notFoundResource(req: Request, res: Response, next: NextFunction) {
+export var notFoundResource: RequestHandler = (req, res) => {
   res.status(404).json({
     status: 404,
-    message: 'Ops Bad Request! Nothing around here',
+    message: 'Ops! Nada foi encontrado.',
   });
-}
+};
