@@ -1,15 +1,16 @@
 import nodemailer from 'nodemailer';
 import config from '../../config';
+import fs from 'fs/promises';
+import path from 'path';
 
 interface RequestEmail {
   user_email: string;
   user_name: string;
   code: number;
-  ip: string | string[];
 }
 
 export class SendEmailService {
-  async execute({ user_email, user_name, code, ip }: RequestEmail): Promise<boolean> {
+  async execute({ user_email, user_name, code }: RequestEmail): Promise<boolean> {
     try {
       let trasporter = nodemailer.createTransport({
         service: 'gmail',
@@ -26,14 +27,7 @@ export class SendEmailService {
         },
         to: user_email,
         subject: 'Seu codigo de uso unico',
-        html: `
-        <p>Olá <strong>${user_name}</strong></p>
-        <p>Nós recebemos uma solicitação para um código de uso único para a sua conta.</p>
-        <span>${ip}</span>
-        <p>Seu código de uso único é: <strong>${code}</strong></p>
-        <p>Obrigado,</p>
-        <p>Equipe de contas CFP</p>
-        `,
+        html: await this.uniqueCodeEmailTemplate(user_name, code),
       };
 
       await trasporter.sendMail(mailConfig);
@@ -42,5 +36,23 @@ export class SendEmailService {
       console.error(error.message);
       return false;
     }
+  }
+
+  private async uniqueCodeEmailTemplate(user_name: string, code: number): Promise<string> {
+    const emailTemplate = await fs.readFile(
+      path.resolve('./src/public/uniqueCodeEmailTemplate.html'),
+      { encoding: 'utf-8' }
+    );
+
+    const replacements = {
+      '{user_name}': user_name,
+      '{code}': String(code),
+    };
+
+    return Object.entries(replacements).reduce(
+      (template, [placeholder, replacement]) =>
+        template.replace(new RegExp(placeholder, 'g'), replacement),
+      emailTemplate
+    );
   }
 }
