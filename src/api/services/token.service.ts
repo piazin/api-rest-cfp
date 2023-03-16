@@ -22,7 +22,7 @@ type ResponseToken = Either<ValidationError, string | boolean>;
 type ResponseTokenChecked = Either<ValidationError, { status: true; data: IToken }>;
 
 export class TokenService {
-  async generatePassRecoveryCode(email: string, ip: string | string[]): Promise<ResponseToken> {
+  async generatePassRecoveryCode(email: string): Promise<ResponseToken> {
     if (!email) return left(new ValidationError({ message: 'Email invalido', statusCode: 400 }));
 
     const user = await User.findOne({ email: email });
@@ -33,13 +33,12 @@ export class TokenService {
     const code: number = generateRandomCode();
     const expireTimestamp: number = moment().add(5, 'minutes').unix();
 
-    await Token.create({ code, user_id: user._id, expireTimestamp });
+    await Token.create({ code, user_id: user._id, expire_timestamp: expireTimestamp });
 
     var emailSendingStatus = await sendEmailService.execute({
       user_email: user.email,
       user_name: user.name,
       code,
-      ip: ip.slice(7),
     });
     if (!emailSendingStatus)
       return left(new ValidationError({ message: failSendEmail, statusCode: 500 }));

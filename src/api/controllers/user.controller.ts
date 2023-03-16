@@ -21,9 +21,7 @@ export async function update(req: Request, res: Response) {
 }
 
 export async function requestPasswordRecoveryCode(req: Request, res: Response) {
-  let ip: string | string[] = req.ip || req.socket.remoteAddress || req.headers['x-forwarded-for'];
-
-  const response = await generatePassRecoveryCode(req.body.email, ip);
+  const response = await generatePassRecoveryCode(req.body.email);
   return response.isRight()
     ? res.status(200).json({ status: 200, message: response.value })
     : res
@@ -48,7 +46,6 @@ export async function changePassword(req: Request, res: Response) {
         .status(response.value.statusCode)
         .json({ status: response.value.statusCode, message: response.value.message });
 }
-
 
 export async function uploadProfilePic(req: Request, res: Response) {
   const response = await userService.uploadProfilePic(req.body.owner, req.file);
