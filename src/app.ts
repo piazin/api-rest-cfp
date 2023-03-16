@@ -9,16 +9,16 @@ import { errorRequestHandler } from './api/middlewares/errorRequestHandler';
 jobOfDeletingTokens.start();
 mongoose.connections[0];
 const app = express();
+const baseUrl = '/api/v1';
 
-// routes import
 if (!(process.env.NODE_ENV === 'production')) app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use('/api/v1', userRouter);
-app.use('/api/v1', authRouter);
-app.use('/api/v1', categoryRouter);
-app.use('/api/v1', transactionRouter);
+app.use(baseUrl, userRouter);
+app.use(baseUrl, authRouter);
+app.use(baseUrl, categoryRouter);
+app.use(baseUrl, transactionRouter);
 
 app.use(errorRequestHandler);
 app.use(notFoundResource);
