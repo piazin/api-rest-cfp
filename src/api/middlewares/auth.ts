@@ -18,11 +18,11 @@ export default function (req: Request, res: Response, next: NextFunction) {
       message: 'Não autorizado: token não encontrado',
     });
 
-  jwt.verify(token, jwt_secret, (err, decode) => {
-    if (err)
-      return res.status(401).json({ status: 401, message: `Não autorizado: ${err.message}` });
-
-    req.user = decode;
+  try {
+    var decoded = jwt.verify(token, jwt_secret);
+    req.user = decoded;
     next();
-  });
+  } catch (error) {
+    return res.status(401).json({ status: 401, message: `Não autorizado: ${error.message}` });
+  }
 }
