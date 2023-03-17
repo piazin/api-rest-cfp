@@ -41,7 +41,7 @@ export async function verifyResetCode(req: Request, res: Response) {
 export async function changePassword(req: Request, res: Response) {
   const response = await userService.changePassword(req.body.email, req.body.password);
   return response.isRight()
-    ? res.status(201).json({ status: 201, data: response.value })
+    ? res.status(200).json({ status: 200, data: response.value })
     : res
         .status(response.value.statusCode)
         .json({ status: response.value.statusCode, message: response.value.message });
