@@ -2,6 +2,7 @@ import { User } from '../models';
 import { Request } from 'express';
 import { isOwner } from '../../utils/isOwner';
 import { isIdValid } from '../../utils/isIdValid';
+import { CategoryService } from './category.service';
 import { ValidationError } from '../../errors/error';
 import { Transaction, ITransaction } from '../models';
 import { Either, left, right } from '../../errors/either';
@@ -135,6 +136,7 @@ class transactionService {
     reqQuery: Request
   ): Promise<ResponseTransactionArray> {
     const queryObj = { ...reqQuery.query };
+    console.log(queryObj.chart);
 
     if (!isIdValid(ownerId))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
@@ -142,9 +144,16 @@ class transactionService {
     if (!isOwner(ownerId, userId))
       return left(new ValidationError({ message: isNotOwner, statusCode: 403 }));
 
-    const response = await Transaction.find({ owner: ownerId }).sort('-created_at');
+    var categories;
+    if (queryObj.chart === 'pie') {
+      const categoryService = new CategoryService();
+      categories = categoryService.findAll();
+      console.log(categories);
+    }
 
-    return right(response);
+    const transactions = await Transaction.find({ owner: ownerId }).sort('-created_at');
+
+    return right(transactions);
   }
 }
 
