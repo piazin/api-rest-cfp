@@ -3,7 +3,7 @@ import { Schema, Types } from 'mongoose';
 export interface ITransaction {
   _id?: string | Types.ObjectId;
   value: number;
-  date: String;
+  date: Date;
   description: string;
   type: string;
   created_at: Date;
@@ -17,7 +17,7 @@ export const TransactionModel = new Schema<ITransaction>({
     required: [true, 'A Transaction must have a value'],
   },
   date: {
-    type: String,
+    type: Date,
     required: [true, 'A Transaction must have a date'],
   },
   description: {

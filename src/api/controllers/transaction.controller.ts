@@ -12,7 +12,7 @@ export async function getTransactionByUserId(req: IRequest, res: Response) {
   return response.isRight()
     ? res.status(200).json({
         status: 200,
-        results: response.value?.length | 0,
+        results: response.value?.length || 0,
         data: { transactions: response.value },
       })
     : res.status(response.value.statusCode).json({

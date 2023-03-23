@@ -14,11 +14,13 @@ const {
 
 type ResponseTransaction = Either<ValidationError, ITransaction>;
 type ResponseTransactionVoid = Either<ValidationError, void | string>;
-type ResponseTransactionArray = Either<ValidationError, ITransaction[] | IChartData[]>;
+type ResponseTransactionArray = Either<ValidationError, ITransaction[] | MonthTransactions>;
 
-interface IChartData {
-  type: string;
-  value: number;
+interface MonthTransactions {
+  [key: string]: {
+    type: string;
+    value: number;
+  }[];
 }
 
 class transactionService {
@@ -155,7 +157,7 @@ class transactionService {
   private async getTransactionDataForCharts(
     chartType: 'pie' | 'bar',
     userId: string
-  ): Promise<IChartData[]> {
+  ): Promise<MonthTransactions> {
     if (chartType == 'pie') {
       const expenseTypeTransactions = await Transaction.find({
         owner: userId,
@@ -167,25 +169,22 @@ class transactionService {
         type: 'income',
       });
 
-      var date = incomeTypeTransactions.map((element) =>
-        element.created_at.toLocaleString('pt-BR', { month: 'long' })
-      );
-      console.log('🚀 ~ file: transaction.service.ts:171 ~ transactionService ~ date:', date);
+      var months = incomeTypeTransactions.reduce((acc: MonthTransactions, element) => {
+        const month = element.date.toLocaleString('pt-BR', { month: 'long' });
 
-      var expenseBalance = 0;
-      var incomeBalance = 0;
-      for (let expense of expenseTypeTransactions) {
-        expenseBalance += expense.value;
-      }
+        if (!acc[month]) {
+          acc[month] = [];
+        }
 
-      for (let income of incomeTypeTransactions) {
-        incomeBalance += income.value;
-      }
+        acc[month].push({
+          type: 'Receita',
+          value: element.value,
+        });
 
-      return [
-        { type: 'Despesas', value: expenseBalance },
-        { type: 'Receitas', value: incomeBalance },
-      ];
+        return acc;
+      }, {});
+
+      return months;
     }
   }
 }
