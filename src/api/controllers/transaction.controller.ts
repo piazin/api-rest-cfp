@@ -8,7 +8,7 @@ interface IRequest extends Request {
 }
 
 export async function getTransactionByUserId(req: IRequest, res: Response) {
-  const response = await transaction.findByOwnerId(req.params.id, req.user!.id, req);
+  const response = await transaction.findByOwnerId(req.user!.id, req);
   return response.isRight()
     ? res.status(200).json({
         status: 200,

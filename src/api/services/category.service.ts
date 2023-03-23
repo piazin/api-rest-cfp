@@ -35,15 +35,19 @@ export class CategoryService {
   }
 
   async findAll(): Promise<CategoryResponse[]> {
-    const response = await Category.find();
+    const response = await Category.find().select('-__v');
 
-    return response.map((category) => {
-      return {
-        _id: category._id,
-        iconName: category.iconName,
-        title: category.title,
-        type: category.type,
-      };
+    return response;
+  }
+
+  async findAllWithTransactions() {
+    const categories = await Category.find().populate({
+      path: 'transaction',
+      strictPopulate: false,
     });
+
+    console.log(categories);
+
+    return categories;
   }
 }

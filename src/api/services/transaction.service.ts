@@ -1,8 +1,7 @@
-import { User } from '../models';
+import { Category, User } from '../models';
 import { Request } from 'express';
 import { isOwner } from '../../utils/isOwner';
 import { isIdValid } from '../../utils/isIdValid';
-import { CategoryService } from './category.service';
 import { ValidationError } from '../../errors/error';
 import { Transaction, ITransaction } from '../models';
 import { Either, left, right } from '../../errors/either';
@@ -15,7 +14,12 @@ const {
 
 type ResponseTransaction = Either<ValidationError, ITransaction>;
 type ResponseTransactionVoid = Either<ValidationError, void | string>;
-type ResponseTransactionArray = Either<ValidationError, Array<ITransaction>>;
+type ResponseTransactionArray = Either<ValidationError, ITransaction[] | IChartData[]>;
+
+interface IChartData {
+  type: string;
+  value: number;
+}
 
 class transactionService {
   async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {
@@ -130,30 +134,59 @@ class transactionService {
     return right(undefined);
   }
 
-  async findByOwnerId(
-    ownerId: string,
-    userId: string,
-    reqQuery: Request
-  ): Promise<ResponseTransactionArray> {
+  async findByOwnerId(userId: string, reqQuery: Request): Promise<ResponseTransactionArray> {
     const queryObj = { ...reqQuery.query };
-    console.log(queryObj.chart);
 
-    if (!isIdValid(ownerId))
+    if (!isIdValid(userId))
       return left(new ValidationError({ message: invalidID, statusCode: 400 }));
 
-    if (!isOwner(ownerId, userId))
-      return left(new ValidationError({ message: isNotOwner, statusCode: 403 }));
-
-    var categories;
     if (queryObj.chart === 'pie') {
-      const categoryService = new CategoryService();
-      categories = categoryService.findAll();
-      console.log(categories);
+      var data = await this.getTransactionDataForCharts('pie', userId);
+      return right(data);
     }
 
-    const transactions = await Transaction.find({ owner: ownerId }).sort('-created_at');
+    const transactions = await Transaction.find({ owner: userId })
+      .sort('-created_at')
+      .populate({ path: 'category', strictPopulate: false });
 
     return right(transactions);
+  }
+
+  private async getTransactionDataForCharts(
+    chartType: 'pie' | 'bar',
+    userId: string
+  ): Promise<IChartData[]> {
+    if (chartType == 'pie') {
+      const expenseTypeTransactions = await Transaction.find({
+        owner: userId,
+        type: 'expense',
+      });
+
+      const incomeTypeTransactions = await Transaction.find({
+        owner: userId,
+        type: 'income',
+      });
+
+      var date = incomeTypeTransactions.map((element) =>
+        element.created_at.toLocaleString('pt-BR', { month: 'long' })
+      );
+      console.log('🚀 ~ file: transaction.service.ts:171 ~ transactionService ~ date:', date);
+
+      var expenseBalance = 0;
+      var incomeBalance = 0;
+      for (let expense of expenseTypeTransactions) {
+        expenseBalance += expense.value;
+      }
+
+      for (let income of incomeTypeTransactions) {
+        incomeBalance += income.value;
+      }
+
+      return [
+        { type: 'Despesas', value: expenseBalance },
+        { type: 'Receitas', value: incomeBalance },
+      ];
+    }
   }
 }
 
