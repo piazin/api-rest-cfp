@@ -173,13 +173,17 @@ class transactionService {
         const month = element.date.toLocaleString('pt-BR', { month: 'long' });
 
         if (!acc[month]) {
-          acc[month] = [];
+          acc[month] = [
+            { type: 'income', value: 0 },
+            { type: 'expense', value: 0 },
+          ];
         }
 
-        acc[month].push({
-          type: 'Receita',
-          value: element.value,
-        });
+        if (Object.keys(acc).includes(month)) {
+          if (element.type === 'income') acc[month][0].value += element.value;
+
+          if (element.type === 'expense') acc[month][1].value += element.value;
+        }
 
         return acc;
       }, {});
