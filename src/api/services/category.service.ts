@@ -46,8 +46,6 @@ export class CategoryService {
       strictPopulate: false,
     });
 
-    console.log(categories);
-
     return categories;
   }
 }

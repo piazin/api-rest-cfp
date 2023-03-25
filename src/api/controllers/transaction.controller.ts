@@ -12,8 +12,8 @@ export async function getTransactionByUserId(req: IRequest, res: Response) {
   return response.isRight()
     ? res.status(200).json({
         status: 200,
-        results: response.value?.length,
-        data: { transactions: response.value },
+        results: response.value.transactions?.length,
+        data: response.value,
       })
     : res.status(response.value.statusCode).json({
         status: response.value.statusCode,

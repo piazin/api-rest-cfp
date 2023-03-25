@@ -8,19 +8,21 @@ import { Either, left, right } from '../../errors/either';
 import constants from '../../constants/transaction.constants';
 import { validateTransactionData } from '../../helpers/validateTransactionData';
 
-const {
-  err: { invalidID, isNotOwner },
-} = constants;
+const { err } = constants;
 
 type ResponseTransaction = Either<ValidationError, ITransaction>;
 type ResponseTransactionVoid = Either<ValidationError, void | string>;
-type ResponseTransactionArray = Either<ValidationError, ITransaction[] | MonthTransactions>;
+type ResponseTransactionArray = Either<ValidationError, { transactions: MonthWithTransactions | MonthTransactions | ITransaction[] }>;
 
 interface MonthTransactions {
   [key: string]: {
     type: string;
     value: number;
   }[];
+}
+
+interface MonthWithTransactions {
+  [key: string]: ITransaction[];
 }
 
 class transactionService {
@@ -31,8 +33,7 @@ class transactionService {
     if (transaction.type != 'expense' && transaction.type != 'income')
       return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
 
-    if (!isIdValid(user_id))
-      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    if (!isIdValid(user_id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     transaction.owner = user_id;
     const user = await User.findById(user_id);
@@ -60,26 +61,19 @@ class transactionService {
     });
   }
 
-  async update(
-    id: string,
-    user_id: string,
-    newTransactionData: ITransaction
-  ): Promise<ResponseTransaction> {
+  async update(id: string, user_id: string, newTransactionData: ITransaction): Promise<ResponseTransaction> {
     const { isValid, err_message } = validateTransactionData(newTransactionData);
     if (!isValid) return left(new ValidationError({ message: err_message, statusCode: 400 }));
 
-    if (!isIdValid(user_id) || !isIdValid(id))
-      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    if (!isIdValid(user_id) || !isIdValid(id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     if (newTransactionData.type !== 'expense' && newTransactionData.type !== 'income')
       return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
 
     const transactionExisting = await Transaction.findById(id);
 
-    if (!transactionExisting)
-      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
-    if (!isOwner(user_id, transactionExisting.owner))
-      return left(new ValidationError({ message: isNotOwner, statusCode: 401 }));
+    if (!transactionExisting) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!isOwner(user_id, transactionExisting.owner)) return left(new ValidationError({ message: err.isNotOwner, statusCode: 401 }));
 
     const user = await User.findById(transactionExisting.owner);
     if (user.balance === null || user.balance === undefined)
@@ -110,20 +104,15 @@ class transactionService {
   }
 
   async delete(id: string, user_id: string): Promise<ResponseTransactionVoid> {
-    if (!isIdValid(id) || !isIdValid(user_id))
-      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    if (!isIdValid(id) || !isIdValid(user_id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     const transaction = await Transaction.findById(id);
-    if (!transaction) return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    if (!transaction) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
-    if (!isOwner(user_id, transaction.owner))
-      return left(new ValidationError({ message: isNotOwner, statusCode: 403 }));
+    if (!isOwner(user_id, transaction.owner)) return left(new ValidationError({ message: err.isNotOwner, statusCode: 403 }));
 
     const deletedTransaction = await Transaction.findByIdAndDelete(id);
-    if (!deletedTransaction)
-      return left(
-        new ValidationError({ message: 'Não foi possível excluir a transação', statusCode: 400 })
-      );
+    if (!deletedTransaction) return left(new ValidationError({ message: 'Não foi possível excluir a transação', statusCode: 400 }));
 
     const user = await User.findById(user_id);
     user.balance =
@@ -139,57 +128,78 @@ class transactionService {
   async findByOwnerId(userId: string, reqQuery: Request): Promise<ResponseTransactionArray> {
     const queryObj = { ...reqQuery.query };
 
-    if (!isIdValid(userId))
-      return left(new ValidationError({ message: invalidID, statusCode: 400 }));
+    if (!isIdValid(userId)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
-    if (queryObj.chart === 'pie') {
-      var data = await this.getTransactionDataForCharts('pie', userId);
-      return right(data);
+    if (queryObj.include === 'chart-pie') {
+      var data = await this.getTransactionDataForCharts(userId);
+      return right({ transactions: data });
     }
 
     const transactions = await Transaction.find({ owner: userId })
       .sort('-created_at')
       .populate({ path: 'category', strictPopulate: false });
 
-    return right(transactions);
+    if (queryObj.include === 'month') {
+      return right({ transactions: this.filterTransactionsByMonth(transactions) });
+    }
+
+    return right({ transactions: transactions });
   }
 
-  private async getTransactionDataForCharts(
-    chartType: 'pie' | 'bar',
-    userId: string
-  ): Promise<MonthTransactions> {
-    if (chartType == 'pie') {
-      const expenseTypeTransactions = await Transaction.find({
-        owner: userId,
-        type: 'expense',
-      });
+  private async getTransactionDataForCharts(userId: string): Promise<MonthTransactions> {
+    const currentYear = new Date().getFullYear();
+    const startDate = new Date(currentYear, 0, 1).toISOString();
+    const endDate = new Date(currentYear, 11, 30).toISOString();
 
-      const incomeTypeTransactions = await Transaction.find({
-        owner: userId,
-        type: 'income',
-      });
+    const transactions = await Transaction.find({
+      owner: userId,
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
 
-      var months = incomeTypeTransactions.reduce((acc: MonthTransactions, element) => {
-        const month = element.date.toLocaleString('pt-BR', { month: 'long' });
+    var months = transactions.reduce((acc: MonthTransactions, element) => {
+      const month = element.date.toLocaleString('pt-BR', { month: 'long' });
 
-        if (!acc[month]) {
-          acc[month] = [
-            { type: 'income', value: 0 },
-            { type: 'expense', value: 0 },
-          ];
-        }
+      if (!acc[month]) {
+        acc[month] = [
+          { type: 'Receitas', value: 0 },
+          { type: 'Despesas', value: 0 },
+          { type: 'Saldo', value: 0 },
+        ];
+      }
 
-        if (Object.keys(acc).includes(month)) {
-          if (element.type === 'income') acc[month][0].value += element.value;
+      if (Object.keys(acc).includes(month)) {
+        if (element.type === 'income') acc[month][0].value += element.value;
 
-          if (element.type === 'expense') acc[month][1].value += element.value;
-        }
+        if (element.type === 'expense') acc[month][1].value += element.value;
+      }
 
-        return acc;
-      }, {});
+      acc[month][2].value = acc[month][0].value - acc[month][1].value;
 
-      return months;
-    }
+      return acc;
+    }, {});
+
+    return months;
+  }
+
+  private filterTransactionsByMonth(transactions: ITransaction[]): MonthTransactions {
+    var months = transactions.reduce((acc: MonthWithTransactions, element) => {
+      const month = element.date.toLocaleString('pt-BR', { month: 'long' });
+
+      if (!acc[month]) {
+        acc[month] = [];
+      }
+
+      if (Object.keys(acc).includes(month)) {
+        acc[month].push(element);
+      }
+
+      return acc;
+    }, {});
+
+    return months;
   }
 }
 
