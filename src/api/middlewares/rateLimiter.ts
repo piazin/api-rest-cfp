@@ -1,7 +1,15 @@
 import { RequestHandler } from 'express';
-import { RateLimiterMemory } from 'rate-limiter-flexible';
+import { RateLimiterRedis } from 'rate-limiter-flexible';
+import Redis from 'ioredis';
 
-const limiter = new RateLimiterMemory({
+const redisClient = new Redis({ enableOfflineQueue: false });
+
+redisClient.on('error', (err) => {
+  console.error('🚀 ~ file: rateLimiter.ts:10 ~ redisClient.on ~ err:', err);
+});
+
+const limiter = new RateLimiterRedis({
+  storeClient: redisClient,
   points: 5,
   duration: 5,
 });
