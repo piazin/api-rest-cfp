@@ -1,29 +1,16 @@
-import { Category, User } from '../models';
+import { User } from '../models';
 import { Request } from 'express';
 import { isOwner } from '../../utils/isOwner';
 import { isIdValid } from '../../utils/isIdValid';
+import { left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
 import { Transaction, ITransaction } from '../models';
-import { Either, left, right } from '../../errors/either';
 import constants from '../../constants/transaction.constants';
 import { validateTransactionData } from '../../helpers/validateTransactionData';
+import { MonthTransactions, MonthWithTransactions } from './interfaces/transactions';
+import { ResponseTransaction, ResponseTransactionVoid, ResponseTransactionArray } from './types/transactions';
 
 const { err } = constants;
-
-type ResponseTransaction = Either<ValidationError, ITransaction>;
-type ResponseTransactionVoid = Either<ValidationError, void | string>;
-type ResponseTransactionArray = Either<ValidationError, { transactions: MonthWithTransactions | MonthTransactions | ITransaction[] }>;
-
-interface MonthTransactions {
-  [key: string]: {
-    type: string;
-    value: number;
-  }[];
-}
-
-interface MonthWithTransactions {
-  [key: string]: ITransaction[];
-}
 
 class transactionService {
   async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {

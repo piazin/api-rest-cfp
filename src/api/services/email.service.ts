@@ -1,13 +1,8 @@
-import nodemailer from 'nodemailer';
-import config from '../../config';
-import fs from 'fs/promises';
 import path from 'path';
-
-interface RequestEmail {
-  user_email: string;
-  user_name: string;
-  code: number;
-}
+import fs from 'fs/promises';
+import config from '../../config';
+import nodemailer from 'nodemailer';
+import { RequestEmail } from './interfaces/email';
 
 export class SendEmailService {
   async execute({ user_email, user_name, code }: RequestEmail): Promise<boolean> {
@@ -39,10 +34,7 @@ export class SendEmailService {
   }
 
   private async uniqueCodeEmailTemplate(user_name: string, code: number): Promise<string> {
-    const emailTemplate = await fs.readFile(
-      path.resolve('./src/public/uniqueCodeEmailTemplate.html'),
-      { encoding: 'utf-8' }
-    );
+    const emailTemplate = await fs.readFile(path.resolve('./src/public/uniqueCodeEmailTemplate.html'), { encoding: 'utf-8' });
 
     const replacements = {
       '{user_name}': user_name,
@@ -50,8 +42,7 @@ export class SendEmailService {
     };
 
     return Object.entries(replacements).reduce(
-      (template, [placeholder, replacement]) =>
-        template.replace(new RegExp(placeholder, 'g'), replacement),
+      (template, [placeholder, replacement]) => template.replace(new RegExp(placeholder, 'g'), replacement),
       emailTemplate
     );
   }

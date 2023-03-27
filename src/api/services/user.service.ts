@@ -1,40 +1,21 @@
 import Joi from 'joi';
-import { Types } from 'mongoose';
 import { tokenService } from './index';
 import { User, IUser, ProfilePic, IProfilePic } from '../models';
 
 import { isIdValid } from '../../utils/isIdValid';
 import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../apis/googleDriveApi';
-import { Either, left, right } from '../../errors/either';
+import { left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
+import { ResponseChangeUserPassword, ResponseUploadProfilePic, ResponseUser, ResponseUserFind } from './types/user';
 
 const {
   err: { invalidUser, invalidGoogleFileId, userNotFound },
 } = constantsUser;
 
-interface ResponseUserProps {
-  _id: Types.ObjectId;
-  name: string;
-  email: string;
-  balance: number;
-  transactions: string;
-  avatar: object;
-  created_at: Date;
-  token?: string;
-}
-
-type ResponseUser = Either<ValidationError, ResponseUserProps>;
-type ResponseUserFind = Either<ValidationError, IUser>;
-type ResponseChangeUserPassword = Either<ValidationError, string>;
-type ResponseUploadProfilePic = Either<ValidationError, IProfilePic>;
-
 export class UserService {
   async findById(user_id: string): Promise<ResponseUserFind> {
-    if (!isIdValid(user_id))
-      return left(
-        new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 400 })
-      );
+    if (!isIdValid(user_id)) return left(new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 400 }));
 
     var user = await User.findOne({ _id: user_id }).select('-password -__v');
     if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
@@ -59,18 +40,14 @@ export class UserService {
     const schemaValidation = Joi.object({
       email: Joi.string().required().email().error(new Error('O email é obrigatório')),
       name: Joi.string().min(1).required().error(new Error('O nome é obrigatório')),
-      password: Joi.string()
-        .min(6)
-        .required()
-        .error(new Error('A senha é obrigatória e deve conter pelo menos 6 digitos')),
+      password: Joi.string().min(6).required().error(new Error('A senha é obrigatória e deve conter pelo menos 6 digitos')),
     });
 
     const { error, value } = await schemaValidation.validate(user);
     if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
 
     const userAlreadyExists = await User.findOne({ email: user.email });
-    if (userAlreadyExists)
-      return left(new ValidationError({ message: 'Usuário já cadastrado', statusCode: 409 }));
+    if (userAlreadyExists) return left(new ValidationError({ message: 'Usuário já cadastrado', statusCode: 409 }));
 
     var userCreated = await User.create(user);
 
@@ -99,14 +76,9 @@ export class UserService {
 
     var codeChecked = await tokenService.isCodeChecked(user._id);
 
-    if (codeChecked.isLeft())
-      return left(new ValidationError({ message: codeChecked.value.message, statusCode: 400 }));
+    if (codeChecked.isLeft()) return left(new ValidationError({ message: codeChecked.value.message, statusCode: 400 }));
 
-    var user = await User.findOneAndUpdate(
-      { _id: user._id },
-      { password: password },
-      { new: true }
-    );
+    var user = await User.findOneAndUpdate({ _id: user._id }, { password: password }, { new: true });
 
     await tokenService.setCodeUsed(codeChecked.value.data._id);
 
@@ -114,8 +86,7 @@ export class UserService {
   }
 
   async uploadProfilePic(owner: string, avatar: any): Promise<ResponseUploadProfilePic> {
-    if (!isIdValid(owner))
-      return left(new ValidationError({ message: invalidUser, statusCode: 400 }));
+    if (!isIdValid(owner)) return left(new ValidationError({ message: invalidUser, statusCode: 400 }));
     const profilePicExists = await ProfilePic.findOne({ owner: owner });
 
     if (profilePicExists) {
@@ -131,10 +102,7 @@ export class UserService {
     };
 
     var response = await uploadFileGoogleDrive(avatarFilter);
-    if (!response)
-      return left(
-        new ValidationError({ message: 'Não foi possivel fazer o upload', statusCode: 500 })
-      );
+    if (!response) return left(new ValidationError({ message: 'Não foi possivel fazer o upload', statusCode: 500 }));
 
     avatarFilter.url = `https://drive.google.com/uc?export=view&id=${response.id}`;
     avatarFilter.googleFileId = response.id;

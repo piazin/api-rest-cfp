@@ -1,21 +1,9 @@
 import { userService } from '.';
 import { Request } from 'express';
-import { Types } from 'mongoose';
 import { ProfilePic } from '../models';
-import { Either, left, right } from '../../errors/either';
+import { left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
-
-interface ResponseUserProps {
-  _id?: Types.ObjectId;
-  name: string;
-  email: string;
-  balance?: number;
-  transactions?: string;
-  avatar: object;
-  token?: string;
-}
-
-type ResponseAuth = Either<ValidationError, ResponseUserProps>;
+import { ResponseAuth } from './types/auth';
 
 export class AuthService {
   async login(email: string, password: string): Promise<ResponseAuth> {
@@ -28,8 +16,7 @@ export class AuthService {
 
     const user = userResult.value;
 
-    if (!user.compareHash(password))
-      return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
+    if (!user.compareHash(password)) return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
 
     const profilePic = await ProfilePic.findOne({ owner: user._id });
     const { _id, name, balance, transactions } = user;
@@ -51,8 +38,6 @@ export class AuthService {
     const user = await userService.create(data.body);
     return user.isRight()
       ? right(user.value)
-      : left(
-          new ValidationError({ message: user.value.message, statusCode: user.value.statusCode })
-        );
+      : left(new ValidationError({ message: user.value.message, statusCode: user.value.statusCode }));
   }
 }
