@@ -117,13 +117,23 @@ class transactionService {
 
     if (!isIdValid(userId)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
+    const currentYear = Number(queryObj.year) || new Date().getFullYear();
+    const startDate = new Date(currentYear, 0, 1).toISOString();
+    const endDate = new Date(currentYear, 11, 30).toISOString();
+
     if (queryObj.include === 'chart-pie') {
-      var data = await this.getTransactionDataForCharts(userId);
+      var data = await this.getTransactionDataForCharts(userId, startDate, endDate);
       return right({ transactions: data });
     }
 
-    const transactions = await Transaction.find({ owner: userId })
-      .sort('-created_at')
+    const transactions = await Transaction.find({
+      owner: userId,
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    })
+      .sort({ date: 1 })
       .populate({ path: 'category', strictPopulate: false });
 
     if (queryObj.include === 'month') {
@@ -133,18 +143,14 @@ class transactionService {
     return right({ transactions: transactions });
   }
 
-  private async getTransactionDataForCharts(userId: string): Promise<MonthTransactions> {
-    const currentYear = new Date().getFullYear();
-    const startDate = new Date(currentYear, 0, 1).toISOString();
-    const endDate = new Date(currentYear, 11, 30).toISOString();
-
+  private async getTransactionDataForCharts(userId: string, startDate: string, endDate: string): Promise<MonthTransactions> {
     const transactions = await Transaction.find({
       owner: userId,
       date: {
         $gte: startDate,
         $lt: endDate,
       },
-    });
+    }).sort({ date: 1 });
 
     var months = transactions.reduce((acc: MonthTransactions, element) => {
       const month = element.date.toLocaleString('pt-BR', { month: 'long' });
