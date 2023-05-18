@@ -2,11 +2,11 @@ import Joi from 'joi';
 import { tokenService } from './index';
 import { User, IUser, ProfilePic, IProfilePic } from '../models';
 
+import { left, right } from '../../errors/either';
 import { isIdValid } from '../../utils/isIdValid';
+import { ValidationError } from '../../errors/error';
 import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../apis/googleDriveApi';
-import { left, right } from '../../errors/either';
-import { ValidationError } from '../../errors/error';
 import { ResponseChangeUserPassword, ResponseUploadProfilePic, ResponseUser, ResponseUserFind } from './types/user';
 
 const {
@@ -51,7 +51,7 @@ export class UserService {
 
     var userCreated = await User.create(user);
 
-    userCreated.transactions = `http://localhost:8080/api/v1/transaction/${userCreated._id}`;
+    userCreated.transactions = `https://localhost:8080/api/v1/transaction/${userCreated._id}`;
     await userCreated.save();
 
     var token = userCreated.generateJwt();

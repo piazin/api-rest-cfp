@@ -16,5 +16,5 @@ export function validateTransactionData(transactionData: ITransaction) {
   });
 
   const { error, value } = validationSchema.validate(transactionData);
-  return error ? { isValid: false, err_message: error.message } : { isValid: true };
+  return error ? { isValid: false, error } : { isValid: true };
 }

@@ -14,8 +14,8 @@ const { err } = constants;
 
 class transactionService {
   async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {
-    const { isValid, err_message } = validateTransactionData(transaction);
-    if (!isValid) return left(new ValidationError({ message: err_message, statusCode: 400 }));
+    const { isValid, error } = validateTransactionData(transaction);
+    if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
 
     if (transaction.type != 'expense' && transaction.type != 'income')
       return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
@@ -49,8 +49,8 @@ class transactionService {
   }
 
   async update(id: string, user_id: string, newTransactionData: ITransaction): Promise<ResponseTransaction> {
-    const { isValid, err_message } = validateTransactionData(newTransactionData);
-    if (!isValid) return left(new ValidationError({ message: err_message, statusCode: 400 }));
+    const { isValid, error } = validateTransactionData(newTransactionData);
+    if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
 
     if (!isIdValid(user_id) || !isIdValid(id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
@@ -102,10 +102,14 @@ class transactionService {
     if (!deletedTransaction) return left(new ValidationError({ message: 'Não foi possível excluir a transação', statusCode: 400 }));
 
     const user = await User.findById(user_id);
+    console.info('before some -> ' + user.balance);
+
     user.balance =
       transaction.type == 'expense'
         ? (user.balance * 100 + transaction.value * 100) / 100
         : (user.balance * 100 - transaction.value * 100) / 100;
+
+    console.info('after some -> ' + user.balance);
 
     await user.save();
 

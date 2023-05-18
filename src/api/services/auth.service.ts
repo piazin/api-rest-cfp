@@ -4,9 +4,13 @@ import { ProfilePic } from '../models';
 import { left, right } from '../../errors/either';
 import { ValidationError } from '../../errors/error';
 import { ResponseAuth } from './types/auth';
+import { validateLoginData } from '../../helpers/validateLoginData';
 
 export class AuthService {
   async login(email: string, password: string): Promise<ResponseAuth> {
+    const { isValid, error } = validateLoginData(email, password);
+    if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+
     const userResult = await userService.findByEmail(email);
 
     if (userResult.isLeft()) {
@@ -18,7 +22,7 @@ export class AuthService {
 
     if (!user.compareHash(password)) return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
 
-    const profilePic = await ProfilePic.findOne({ owner: user._id });
+    const profilePic = await ProfilePic.findOne({ owner: user?._id });
     const { _id, name, balance, transactions } = user;
     const avatar = profilePic || undefined;
     const token = user.generateJwt();

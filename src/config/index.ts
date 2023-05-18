@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default {
-  port: process.env.PORT,
+  port: Number(process.env.PORT),
   db: {
     url: process.env.NODE_ENV === 'production' ? process.env.MONGO_URL : process.env.MONGO_DOCKER,
   },

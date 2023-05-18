@@ -6,17 +6,19 @@ const { jwt_secret } = config;
 
 export default function (req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization)
-    return res.status(404).json({
+    return res.status(401).json({
       status: 401,
-      message: 'Não autorizado: token não encontrado',
+      message: 'Não autorizado: token ausente',
     });
 
-  var token = req.headers.authorization.split(' ')[1];
-  if (!token)
+  const [authType, token] = req.headers.authorization.split(' ');
+
+  if (authType !== 'Bearer' || !token) {
     return res.status(401).json({
       status: 401,
       message: 'Não autorizado: token não encontrado',
     });
+  }
 
   try {
     var decoded = jwt.verify(token, jwt_secret);
