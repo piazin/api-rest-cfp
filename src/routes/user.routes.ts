@@ -16,13 +16,8 @@ const upload = multer(multerConfig);
 
 export const router = Router();
 
-router.route('/user/:id').get(find);
-
+router.route('/user').all(auth).get(find);
 router.route('/user/change-password').patch(changePassword);
 router.route('/user/verify-reset-code').post(verifyResetCode);
 router.route('/user/password-reset-request').post(requestPasswordRecoveryCode);
-
-router
-  .route('/user/avatar')
-  .post(auth, upload.single('avatar'), uploadProfilePic)
-  .delete(auth, deleteProfilePic);
+router.route('/user/avatar').all(auth).post(upload.single('avatar'), uploadProfilePic).delete(deleteProfilePic);

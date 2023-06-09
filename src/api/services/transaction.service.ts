@@ -125,7 +125,7 @@ class transactionService {
     const startDate = new Date(currentYear, 0, 1).toISOString();
     const endDate = new Date(currentYear, 11, 30).toISOString();
 
-    if (queryObj.include === 'chart-pie') {
+    if (queryObj.include === 'summary') {
       var data = await this.getTransactionDataForCharts(userId, startDate, endDate);
       return right({ transactions: data });
     }
