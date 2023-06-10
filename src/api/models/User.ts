@@ -68,6 +68,7 @@ UserModel.pre('findOneAndUpdate', async function (next) {
 
 UserModel.methods = {
   compareHash(hash: string) {
+    console.log(hash, this.password);
     return bcrypt.compareSync(hash, this.password);
   },
 

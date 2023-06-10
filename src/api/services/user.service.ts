@@ -8,6 +8,7 @@ import { ValidationError } from '../../errors/error';
 import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../apis/googleDriveApi';
 import { ResponseChangeUserPassword, ResponseUploadProfilePic, ResponseUser, ResponseUserFind } from './types/user';
+import { UpdateUserDto } from './dto/UpdateUserDto';
 
 const {
   err: { invalidUser, invalidGoogleFileId, userNotFound },
@@ -68,6 +69,40 @@ export class UserService {
       created_at,
       token,
     });
+  }
+
+  async update(updateUserDto: UpdateUserDto, id: string): Promise<ResponseUserFind> {
+    const schemaValidation = Joi.object({
+      email: Joi.string().email().error(new Error('O não é valido!')),
+      name: Joi.string().min(1).error(new Error('O nome não é valido!')),
+      password: Joi.string().min(6).error(new Error('A senha é não é valida! Deve conter pelo menos 6 digitos')),
+      currentPassword: Joi.string().error(new Error('A senha é não é valida!')),
+    });
+
+    const { error, value } = schemaValidation.validate(updateUserDto);
+    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isIdValid(id)) return left(new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 404 }));
+    if (Object.keys(updateUserDto).length === 0)
+      return left(new ValidationError({ message: 'Nenhuma informação á ser atualizada', statusCode: 400 }));
+
+    if (updateUserDto?.email) {
+      const userWithThisEmail = await User.findOne({ email: updateUserDto.email });
+      if (userWithThisEmail) return left(new ValidationError({ message: 'O email já está sendo usado', statusCode: 400 }));
+    }
+
+    const user = await User.findById(id);
+    if (!user) return left(new ValidationError({ message: 'Usuário não encontrado', statusCode: 404 }));
+
+    if (updateUserDto?.password) {
+      if (!updateUserDto?.currentPassword) return left(new ValidationError({ message: 'A senha atual não é valida', statusCode: 401 }));
+
+      if (!user.compareHash(updateUserDto.currentPassword))
+        return left(new ValidationError({ message: 'Senha incorreta!', statusCode: 401 }));
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password -__v');
+
+    return right(updatedUser);
   }
 
   async changePassword(email: string, password: string): Promise<ResponseChangeUserPassword> {

@@ -6,7 +6,7 @@ import { tokenService } from '../services';
 const { generatePassRecoveryCode, validateTokenCode } = tokenService;
 
 export async function find(req: Request, res: Response) {
-  var response = await userService.findById(req.user.id);
+  const response = await userService.findById(req.user.id);
   return response.isRight()
     ? res.status(200).json({ status: 200, data: response.value })
     : res.status(response.value.statusCode).json({
@@ -17,7 +17,17 @@ export async function find(req: Request, res: Response) {
 
 export async function update(req: Request, res: Response) {
   try {
-  } catch (error) {}
+    const response = await userService.update(req.body, req.user.id);
+    return response.isRight()
+      ? res.status(200).json({ status: 200, data: response.value })
+      : res.status(response.value.statusCode).json({
+          status: response.value.statusCode,
+          message: response.value.message,
+        });
+  } catch (error) {
+    console.error('🚀 ~ file: user.controller.ts:28 ~ update ~ error:', error);
+    responseInternalError(res);
+  }
 }
 
 export async function requestPasswordRecoveryCode(req: Request, res: Response) {
