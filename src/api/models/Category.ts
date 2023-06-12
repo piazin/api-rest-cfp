@@ -1,9 +1,11 @@
-import { Schema } from 'mongoose';
+import { Schema, Types } from 'mongoose';
 
 export interface ICategory {
   title: string;
   iconName: string;
   type: 'expense' | 'income';
+  colorHash: string;
+  owner: Types.ObjectId | string;
 }
 
 export const CategoryModel = new Schema<ICategory>({
@@ -15,5 +17,12 @@ export const CategoryModel = new Schema<ICategory>({
     type: String,
     required: true,
   },
-  type: String,
+  type: {
+    type: String,
+    required: true,
+  },
+  colorHash: {
+    type: String,
+    required: true,
+  },
 });

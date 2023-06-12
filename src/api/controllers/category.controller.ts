@@ -4,7 +4,7 @@ import { categoryService } from '../services';
 
 export async function findAll(req: Request, res: Response) {
   try {
-    const response = await categoryService.findAllWithTransactions();
+    const response = await categoryService.findAll();
     return res.status(200).json({
       status: 200,
       data: response,
