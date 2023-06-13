@@ -25,4 +25,9 @@ export const CategoryModel = new Schema<ICategory>({
     type: String,
     required: true,
   },
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
 });
