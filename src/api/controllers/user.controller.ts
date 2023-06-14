@@ -25,7 +25,7 @@ export async function update(req: Request, res: Response) {
           message: response.value.message,
         });
   } catch (error) {
-    console.error('🚀 ~ file: user.controller.ts:28 ~ update ~ error:', error);
+    console.error('🚀 ~ file: user.controller.ts:28 ~ update ~ error:', error.message);
     responseInternalError(res);
   }
 }

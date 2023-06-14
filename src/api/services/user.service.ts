@@ -92,8 +92,10 @@ export class UserService {
     if (updateUserDto?.email) {
       const userWithThisEmail = await User.findOne({ email: updateUserDto.email });
 
-      if (user.email !== userWithThisEmail.email) {
-        if (userWithThisEmail) return left(new ValidationError({ message: 'O email já está sendo usado', statusCode: 400 }));
+      if (userWithThisEmail) {
+        if (user.email !== userWithThisEmail.email) {
+          return left(new ValidationError({ message: 'O email já está sendo usado', statusCode: 400 }));
+        }
       }
     }
 

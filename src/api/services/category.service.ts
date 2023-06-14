@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import Joi from 'joi';
 import { CreateCategoryDto } from './dto/CreateCategoryDto';
-import { Category, ICategory } from '../models';
+import { Category, ICategory, Transaction } from '../models';
 import { Either, left, right } from '../../errors/either';
 import { InternalServerError, ValidationError } from '../../errors/error';
 import { isIdValid } from '../../utils/isIdValid';
@@ -57,6 +57,10 @@ export class CategoryService {
   async delete(categoryId: string, ownerId: string): Promise<Response> {
     if (!isIdValid(ownerId)) return left(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
     if (!isIdValid(categoryId)) return left(new ValidationError({ message: 'Id da categoria invalido', statusCode: 400 }));
+
+    const transactionsWithThisCategory = await Transaction.find({ category: categoryId });
+    if (transactionsWithThisCategory?.length > 0)
+      return left(new ValidationError({ message: 'Existem transações com está categoria', statusCode: 405 }));
 
     const category = await Category.findById(categoryId);
     if (!category) return left(new ValidationError({ message: 'Categoria não encontrada', statusCode: 404 }));
