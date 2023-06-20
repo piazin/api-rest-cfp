@@ -12,7 +12,6 @@ const redisClient = new Redis({
   port,
   username,
   password,
-  tls: {},
 });
 
 redisClient.on('error', (err) => {
