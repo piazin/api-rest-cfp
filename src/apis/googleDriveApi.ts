@@ -6,10 +6,10 @@ import { IProfilePic } from '../api/models/ProfilePic';
 import config from '../config/index';
 const { google_folder_id } = config;
 
-// const google_json_key = JSON.parse(process.env.GOOGLE_JSON_KEY);
-const google_json_key = JSON.parse(
-  fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })
-);
+const google_json_key = JSON.parse(process.env.GOOGLE_JSON_KEY);
+// const google_json_key = JSON.parse(
+//   fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })
+// );
 
 const auth = new google.auth.GoogleAuth({
   // keyFile: JSON.stringify(config.googleapikey),
@@ -51,9 +51,7 @@ export async function uploadFileGoogleDrive(fileInfo: IProfilePic) {
   }
 }
 
-export async function deleteFileGoogleDrive(
-  fileId: string
-): Promise<{ status: number; data: any }> {
+export async function deleteFileGoogleDrive(fileId: string): Promise<{ status: number; data: any }> {
   try {
     const response = await driveService.files.delete({
       fileId: fileId,
