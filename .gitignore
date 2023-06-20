@@ -1,7 +1,6 @@
 node_modules
 .env
-keys
+keys/google_json_key.json
 dist
-cert
-server.cert
-server.key
+cert/server.cert
+cert/server.key
