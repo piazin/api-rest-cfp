@@ -3,16 +3,9 @@ import config from '../../config';
 import { RequestHandler } from 'express';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 
-const {
-  redis: { username, password, host, port },
-} = config;
+const { redis } = config;
 
-const redisClient = new Redis({
-  host,
-  port,
-  username,
-  password,
-});
+const redisClient = new Redis(process.env.NODE_ENV === 'production' ? redis : null);
 
 redisClient.on('error', (err) => {
   console.error('🚀 ~ file: rateLimiter.ts:10 ~ redisClient.on ~ err:', err);
