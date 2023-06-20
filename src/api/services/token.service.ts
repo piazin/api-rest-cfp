@@ -27,11 +27,8 @@ export class TokenService {
 
     await Token.create({ code, user_id: user._id, expire_timestamp: expireTimestamp });
 
-    var emailSendingStatus = await sendEmailService.execute({
-      user_email: user.email,
-      user_name: user.name,
-      code,
-    });
+    const emailSendingStatus = await sendEmailService.execute<Object>(user.email, 'Seu codigo de uso unico', { userName: user.name, code });
+
     if (!emailSendingStatus) return left(new ValidationError({ message: failSendEmail, statusCode: 500 }));
 
     return right(`Acabamos de enviar um codigo para o seu endereço de e-mail registrado ${user.email}`);

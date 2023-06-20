@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 
-enum emailTemplatesAvailable {
+export enum emailTemplatesAvailable {
   uniqueCode = 'uniqueCodeEmailTemplate.html',
 }
 

@@ -1,6 +1,5 @@
-import { RequestEmail } from '../interfaces/email';
 import { EmailService } from '../interfaces/emailService';
-import { GetEmailTemplate } from '../../../helpers/emailTemplate';
+import { GetEmailTemplate, emailTemplatesAvailable } from '../../../helpers/emailTemplate';
 
 export class SendEmailService {
   private emailService: EmailService;
@@ -11,14 +10,14 @@ export class SendEmailService {
     this.getEmailTemplate = new GetEmailTemplate();
   }
 
-  async execute({ user_email, user_name, code }: RequestEmail): Promise<boolean> {
+  async execute<T>(to: string, subject: string, optionalData?: T): Promise<boolean> {
     try {
-      const emailTemplate = await this.getEmailTemplate.uniqueCode(user_name, code);
+      const emailTemplate = await this.readTemplate(emailTemplatesAvailable.uniqueCode, optionalData);
 
       let mailConfig = {
         from: 'cfp@lucasouza.tech',
-        to: user_email,
-        subject: 'Seu codigo de uso unico',
+        to: process.env.NODE_ENV === 'development' ? 'delivered@resend.dev' : to,
+        subject,
         html: emailTemplate,
       };
 
@@ -27,6 +26,15 @@ export class SendEmailService {
     } catch (error) {
       console.error(error.message);
       return false;
+    }
+  }
+
+  private async readTemplate(templateName: emailTemplatesAvailable, optionalData?: any): Promise<string> {
+    switch (templateName) {
+      case emailTemplatesAvailable.uniqueCode:
+        return await this.getEmailTemplate.uniqueCode(optionalData.userName, optionalData.code);
+      default:
+        return null;
     }
   }
 }
