@@ -1,10 +1,10 @@
 import express from 'express';
 import mongoose from './api/database/dbconnection';
-import useMiddlewares from './api/middlewares/useMiddlewares';
+import { useMiddlewares } from './api/middlewares/useMiddlewares';
 import { jobOfDeletingTokens } from './jobs/deleteUsedTokens';
 import { notFoundResource } from './api/middlewares/notFoundResource';
 import { errorRequestHandler } from './api/middlewares/errorRequestHandler';
-import useRoutes from './routes/use.routes';
+import { useRoutes } from './routes/use.routes';
 
 const app = express();
 
