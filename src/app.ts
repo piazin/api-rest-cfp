@@ -5,6 +5,7 @@ import { jobOfDeletingTokens } from './jobs/deleteUsedTokens';
 import { notFoundResource } from './api/middlewares/notFoundResource';
 import { errorRequestHandler } from './api/middlewares/errorRequestHandler';
 import { useRoutes } from './routes/use.routes';
+import { manageCluster } from './cluster';
 
 const app = express();
 
@@ -17,4 +18,4 @@ useRoutes(app);
 app.use(errorRequestHandler);
 app.use(notFoundResource);
 
-export default app;
+manageCluster(app);
