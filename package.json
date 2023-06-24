@@ -1,13 +1,13 @@
 {
   "name": "api-rest-cfp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=production node dist/app.js",
-    "build": "tsc",
+    "build": "npx tsc",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/app.ts",
-    "start:test": "node dist/app.js",
+    "testing": "node dist/app.js",
     "test": "jest",
     "test:script": "./src/scripts/loop_test.sh"
   },
