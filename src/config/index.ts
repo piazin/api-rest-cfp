@@ -26,4 +26,5 @@ export default {
     process.env.NODE_ENV === 'production'
       ? process.env.GOOGLE_JSON_KEY
       : JSON.parse(fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })),
+  google_email: process.env.GOOGLE_EMAIL,
 };

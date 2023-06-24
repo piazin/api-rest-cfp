@@ -8,6 +8,7 @@ const { google_folder_id, google_json_key } = config;
 const auth = new google.auth.GoogleAuth({
   credentials: google_json_key,
   scopes: ['https://www.googleapis.com/auth/drive'],
+  clientOptions: { email: config.google_email },
 });
 
 const driveService = google.drive({
