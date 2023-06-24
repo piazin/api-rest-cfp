@@ -15,7 +15,7 @@ redisClient.on('connection', (stream) => console.info('Redis connected'));
 
 const limiter = new RateLimiterRedis({
   storeClient: redisClient,
-  points: 5,
+  points: 10,
   duration: 5,
 });
 
