@@ -3,15 +3,16 @@ import cluster from 'cluster';
 import { Express } from 'express';
 import { startServer } from './server';
 
-const numberOfCPUs = cpus().length;
-console.info(numberOfCPUs);
+let numberOfCPUs = cpus().length;
 
-export function manageCluster(app: Express, maxRestarts = 5) {
+export function manageCluster(app: Express, maxCors?: number, maxRestarts = 5) {
   if (cluster.isPrimary) {
     let restartCounts = new Map();
 
+    if (maxCors) numberOfCPUs = maxCors;
     for (let i = 0; i < numberOfCPUs; i++) {
       cluster.fork();
+      console.log(i);
     }
 
     cluster.on('exit', (worker, code, signal) => {

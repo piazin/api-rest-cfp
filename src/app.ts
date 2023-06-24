@@ -6,6 +6,7 @@ import { notFoundResource } from './api/middlewares/notFoundResource';
 import { errorRequestHandler } from './api/middlewares/errorRequestHandler';
 import { useRoutes } from './routes/use.routes';
 import { manageCluster } from './cluster';
+import config from './config';
 
 const app = express();
 
@@ -18,4 +19,4 @@ useRoutes(app);
 app.use(errorRequestHandler);
 app.use(notFoundResource);
 
-manageCluster(app);
+manageCluster(app, config.cores);

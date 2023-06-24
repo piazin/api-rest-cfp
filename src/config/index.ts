@@ -5,6 +5,7 @@ dotenv.config();
 
 export default {
   port: Number(process.env.PORT),
+  cores: Number(process.env.MAX_CORES),
   db: {
     url: process.env.NODE_ENV === 'production' ? process.env.MONGO_URL : process.env.MONGO_DOCKER,
   },
