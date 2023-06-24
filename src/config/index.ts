@@ -22,9 +22,9 @@ export default {
   },
   jwt_secret: process.env.SECRET_JWT,
   google_folder_id: process.env.GOOGLE_API_FOLDER_ID,
-  google_json_key: process.env.GOOGLE_JSON_KEY,
-  // process.env.NODE_ENV === 'production'
-  //   ? process.env.GOOGLE_JSON_KEY
-  //   : JSON.parse(fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })),
+  google_json_key:
+    process.env.NODE_ENV === 'production'
+      ? JSON.parse(process.env.GOOGLE_JSON_KEY)
+      : JSON.parse(fs.readFileSync(resolve('keys/google_json_key.json'), { encoding: 'utf-8' })),
   google_email: process.env.GOOGLE_EMAIL,
 };

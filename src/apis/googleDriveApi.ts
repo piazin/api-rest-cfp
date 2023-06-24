@@ -6,7 +6,7 @@ import config from '../config/index';
 const { google_folder_id, google_json_key } = config;
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: google_json_key,
+  credentials: google_json_key,
   scopes: ['https://www.googleapis.com/auth/drive'],
   clientOptions: { email: config.google_email },
 });
