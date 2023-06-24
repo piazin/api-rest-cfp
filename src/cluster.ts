@@ -12,7 +12,6 @@ export function manageCluster(app: Express, maxCors?: number, maxRestarts = 5) {
     if (maxCors) numberOfCPUs = maxCors;
     for (let i = 0; i < numberOfCPUs; i++) {
       cluster.fork();
-      console.log(i);
     }
 
     cluster.on('exit', (worker, code, signal) => {
