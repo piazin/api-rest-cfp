@@ -127,6 +127,9 @@ export class UserService {
   }
 
   async uploadProfilePic(owner: string, avatar: any): Promise<ResponseUploadProfilePic> {
+    console.log('🚀 ~ file: user.service.ts:130 ~ UserService ~ uploadProfilePic ~ avatar:', avatar);
+    console.log('🚀 ~ file: user.service.ts:130 ~ UserService ~ uploadProfilePic ~ owner:', owner);
+
     if (!isIdValid(owner)) return left(new ValidationError({ message: invalidUser, statusCode: 400 }));
     const profilePicExists = await ProfilePic.findOne({ owner: owner });
 

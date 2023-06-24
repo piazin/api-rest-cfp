@@ -4,3 +4,5 @@ keys/google_json_key.json
 dist
 cert/server.cert
 cert/server.key
+uploads/*.jpeg
+uploads/*.png

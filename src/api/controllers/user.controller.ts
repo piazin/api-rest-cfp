@@ -52,7 +52,7 @@ export async function changePassword(req: Request, res: Response) {
 }
 
 export async function uploadProfilePic(req: Request, res: Response) {
-  const response = await userService.uploadProfilePic(req.body.owner, req.file);
+  const response = await userService.uploadProfilePic(req.user?.id, req.file);
   return response.isRight()
     ? res.status(200).json({ status: 200, data: response.value })
     : res.status(response.value.statusCode).json({ status: response.value.statusCode, message: response.value.message });
