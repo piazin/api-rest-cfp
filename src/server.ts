@@ -1,14 +1,8 @@
-import figlet from 'figlet';
 import config from '@config';
 import { Express } from 'express';
 
 export async function startServer(app: Express) {
-  const server = app.listen(config.port, () => {
-    figlet(`server on #${process.pid}`, { whitespaceBreak: true, width: 130 }, (e, r) => {
-      if (e) return;
-      console.info(r);
-    });
-  });
+  const server = app.listen(config.port, () => console.info(`Server listening on port ${config.port} #${process.pid}}`));
 
   process.on('uncaughtException', (error) => {
     console.error('🚀 ~ file: server.ts:8 ~ process.on ~ error:', error);
