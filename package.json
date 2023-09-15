@@ -52,52 +52,9 @@
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.3",
-    "winston": "^3.8.2"
-  },
-  "devDependencies": {
+    "winston": "^3.8.2",
     "@types/figlet": "^1.5.6",
-    "@types/module-alias": "^2.0.2",
     "tsc-alias": "^1.8.7"
   },
-  "_moduleAliases": {
-    "@controllers/*": [
-      "./src/api/controllers/*"
-    ],
-    "@services": [
-      "./src/api/services/index.ts"
-    ],
-    "@models": [
-      "./src/api/models/index.ts"
-    ],
-    "@utils": [
-      "./src/utils/index.ts"
-    ],
-    "@helpers": [
-      "./src/helpers/index.ts"
-    ],
-    "@either/*": [
-      "./src/errors/*"
-    ],
-    "@routes": [
-      "./src/routes/use.routes.ts"
-    ],
-    "@middlewares/*": [
-      "./src/api/middlewares/*"
-    ],
-    "@dto": [
-      "./src/api/services/dto/index.ts"
-    ],
-    "@customtypes/*": [
-      "./src/api/services/types/*"
-    ],
-    "@config": [
-      "./src/config/index.ts"
-    ],
-    "@jobs/*": [
-      "./src/jobs/*"
-    ]
-  },
-  "_moduleDirectories": [
-    "node_modules_custom"
-  ]
+  "devDependencies": {}
 }
