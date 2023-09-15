@@ -8,9 +8,9 @@ import {
   verifyResetCode,
   changePassword,
   requestPasswordRecoveryCode,
-} from '../api/controllers/user.controller';
+} from '@controllers/user.controller';
 
-import auth from '../api/middlewares/auth';
+import auth from '@middlewares/auth';
 
 import multerConfig from '../config/multer.config';
 const upload = multer(multerConfig);

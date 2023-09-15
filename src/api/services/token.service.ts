@@ -1,13 +1,13 @@
 import moment from 'moment';
 import { Types } from 'mongoose';
-import { sendEmailService } from '.';
-import { User, Token, IToken } from '../models';
-import { ValidationError } from '../../errors/error';
+import { User, Token } from '@models';
+import { sendEmailService } from '@services';
+import { left, right } from '@either/either';
+import { generateRandomCode } from '@helpers';
+import { ValidationError } from '@either/error';
 import constants from '../../constants/user.constants';
-import { Either, left, right } from '../../errors/either';
-import { generateRandomCode } from '../../helpers/generateRandomCode';
-import { ResponseToken, ResponseTokenChecked } from './types/token';
 import { TParametersDeleteToken } from './interfaces/token';
+import { ResponseToken, ResponseTokenChecked } from '@customtypes/token';
 
 const {
   err: { userNotFound, failSendEmail },

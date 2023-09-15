@@ -1,5 +1,5 @@
 import { EmailService } from '../interfaces/emailService';
-import { GetEmailTemplate, emailTemplatesAvailable } from '../../../helpers/emailTemplate';
+import { GetEmailTemplate, emailTemplatesAvailable } from '@helpers';
 
 export class SendEmailService {
   private emailService: EmailService;

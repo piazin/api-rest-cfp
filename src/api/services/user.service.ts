@@ -1,14 +1,14 @@
 import Joi from 'joi';
-import { categoryService, tokenService } from './index';
-import { User, IUser, ProfilePic, IProfilePic } from '../models';
+import { categoryService, tokenService } from '@services';
+import { User, IUser, ProfilePic, IProfilePic } from '@models';
 
-import { left, right } from '../../errors/either';
-import { isIdValid } from '../../utils/isIdValid';
-import { ValidationError } from '../../errors/error';
+import { isIdValid } from '@utils';
+import { UpdateUserDto } from '@dto';
+import { left, right } from '@either/either';
+import { ValidationError } from '@either/error';
 import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../apis/googleDriveApi';
-import { ResponseChangeUserPassword, ResponseUploadProfilePic, ResponseUser, ResponseUserFind } from './types/user';
-import { UpdateUserDto } from './dto/UpdateUserDto';
+import { ResponseChangeUserPassword, ResponseUploadProfilePic, ResponseUser, ResponseUserFind } from '@customtypes/user';
 
 const {
   err: { invalidUser, invalidGoogleFileId, userNotFound },

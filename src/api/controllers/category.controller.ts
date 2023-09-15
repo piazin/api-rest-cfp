@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { categoryService } from '../services';
-import { responseInternalError } from '../../errors/responseInternalError';
+import { categoryService } from '@services';
+import { responseInternalError } from '@either/responseInternalError';
 
 export async function findAll(req: Request, res: Response) {
   try {

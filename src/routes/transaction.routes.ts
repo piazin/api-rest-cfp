@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createTransaction, getTransactionByUserId, removeTransaction, updateTransaction } from '../api/controllers/transaction.controller';
-
-import auth from '../api/middlewares/auth';
+import auth from '@middlewares/auth';
+import { createTransaction, getTransactionByUserId, removeTransaction, updateTransaction } from '@controllers/transaction.controller';
 
 export const router = Router();
 

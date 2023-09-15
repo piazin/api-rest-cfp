@@ -1,12 +1,10 @@
-import { Types } from 'mongoose';
 import Joi from 'joi';
-import { CreateCategoryDto } from './dto/CreateCategoryDto';
-import { Category, ICategory, Transaction } from '../models';
-import { Either, left, right } from '../../errors/either';
-import { InternalServerError, ValidationError } from '../../errors/error';
-import { isIdValid } from '../../utils/isIdValid';
-import { isOwner } from '../../utils/isOwner';
-import { UpdateCategoryDto } from './dto/UpdateCategoryDto';
+import { Types } from 'mongoose';
+import { isIdValid, isOwner } from '@utils';
+import { Either, left, right } from '@either/either';
+import { Category, ICategory, Transaction } from '@models';
+import { CreateCategoryDto, UpdateCategoryDto } from '@dto';
+import { InternalServerError, ValidationError } from '@either/error';
 
 interface CategoryResponse extends ICategory {
   _id: Types.ObjectId;

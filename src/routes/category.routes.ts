@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { create, findAll, remove } from '../api/controllers/category.controller';
-import auth from '../api/middlewares/auth';
+import auth from '@middlewares/auth';
+import { create, findAll, remove } from '@controllers/category.controller';
 
 export const router = Router();
 

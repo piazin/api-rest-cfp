@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import transactionsService from '../services/transaction.service';
-
-const transaction = new transactionsService();
+import { transactionService } from '@services';
 
 interface IRequest extends Request {
   user_id: string;
 }
 
 export async function getTransactionByUserId(req: IRequest, res: Response) {
-  const response = await transaction.findByOwnerId(req.user!.id, req);
+  const response = await transactionService.findByOwnerId(req.user!.id, req);
   return response.isRight()
     ? res.status(200).json({
         status: 200,
@@ -22,7 +20,7 @@ export async function getTransactionByUserId(req: IRequest, res: Response) {
 }
 
 export async function createTransaction(req: Request, res: Response) {
-  const response = await transaction.create(req.body, req.user!.id);
+  const response = await transactionService.create(req.body, req.user!.id);
   return response.isRight()
     ? res.status(201).json({ status: 201, data: response.value })
     : res.status(response.value.statusCode).json({
@@ -32,7 +30,7 @@ export async function createTransaction(req: Request, res: Response) {
 }
 
 export async function updateTransaction(req: Request, res: Response) {
-  const response = await transaction.update(req.params.id, req.user!.id, req.body);
+  const response = await transactionService.update(req.params.id, req.user!.id, req.body);
   return response.isRight()
     ? res.status(201).json({ status: 200, data: response.value })
     : res.status(response.value.statusCode).json({
@@ -42,7 +40,7 @@ export async function updateTransaction(req: Request, res: Response) {
 }
 
 export async function removeTransaction(req: Request, res: Response) {
-  const response = await transaction.delete(req.params.id, req.user!.id);
+  const response = await transactionService.delete(req.params.id, req.user!.id);
   return response.isRight()
     ? res.status(204).json({ status: 204, data: response.value })
     : res.status(response.value.statusCode).json({

@@ -1,12 +1,12 @@
 import express from 'express';
-import mongoose from './api/database/dbconnection';
-import { useMiddlewares } from './api/middlewares/useMiddlewares';
-import { jobOfDeletingTokens } from './jobs/deleteUsedTokens';
-import { notFoundResource } from './api/middlewares/notFoundResource';
-import { errorRequestHandler } from './api/middlewares/errorRequestHandler';
-import { useRoutes } from './routes/use.routes';
-import { manageCluster } from './cluster';
 import config from './config';
+import { useRoutes } from '@routes';
+import { manageCluster } from './cluster';
+import mongoose from './api/database/dbconnection';
+import { useMiddlewares } from '@middlewares/useMiddlewares';
+import { jobOfDeletingTokens } from '@jobs/deleteUsedTokens';
+import { notFoundResource } from '@middlewares/notFoundResource';
+import { errorRequestHandler } from '@middlewares/errorRequestHandler';
 
 const app = express();
 

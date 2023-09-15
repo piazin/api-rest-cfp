@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { responseInternalError } from '../../errors/responseInternalError';
-import { userService } from '../services';
-import { tokenService } from '../services';
+import { tokenService, userService } from '@services';
+import { responseInternalError } from '@either/responseInternalError';
 
 const { generatePassRecoveryCode, validateTokenCode } = tokenService;
 

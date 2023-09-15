@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import config from '../../config';
+import config from '@config';
 import { RequestHandler } from 'express';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 

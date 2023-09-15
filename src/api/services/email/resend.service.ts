@@ -1,5 +1,5 @@
+import config from '@config';
 import { Resend } from 'resend';
-import config from '../../../config';
 import { EmailService } from '../interfaces/emailService';
 
 export class ResendEmailService implements EmailService {

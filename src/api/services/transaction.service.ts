@@ -1,18 +1,16 @@
-import { User } from '../models';
 import { Request } from 'express';
-import { isOwner } from '../../utils/isOwner';
-import { isIdValid } from '../../utils/isIdValid';
-import { left, right } from '../../errors/either';
-import { ValidationError } from '../../errors/error';
-import { Transaction, ITransaction } from '../models';
+import { isOwner, isIdValid } from '@utils';
+import { left, right } from '@either/either';
+import { ValidationError } from '@either/error';
+import { validateTransactionData } from '@helpers';
+import { User, Transaction, ITransaction } from '@models';
 import constants from '../../constants/transaction.constants';
-import { validateTransactionData } from '../../helpers/validateTransactionData';
 import { MonthTransactions, MonthWithTransactions } from './interfaces/transactions';
-import { ResponseTransaction, ResponseTransactionVoid, ResponseTransactionArray } from './types/transactions';
+import { ResponseTransaction, ResponseTransactionVoid, ResponseTransactionArray } from '@customtypes/transactions';
 
 const { err } = constants;
 
-class transactionService {
+export class TransactionService {
   async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {
     const { isValid, error } = validateTransactionData(transaction);
     if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
@@ -199,5 +197,3 @@ class transactionService {
     return months;
   }
 }
-
-export default transactionService;

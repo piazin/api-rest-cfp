@@ -1,10 +1,10 @@
-import { userService } from '.';
 import { Request } from 'express';
-import { ProfilePic } from '../models';
-import { left, right } from '../../errors/either';
-import { ValidationError } from '../../errors/error';
-import { ResponseAuth } from './types/auth';
-import { validateLoginData } from '../../helpers/validateLoginData';
+import { ProfilePic } from '@models';
+import { userService } from '@services';
+import { left, right } from '@either/either';
+import { validateLoginData } from '@helpers';
+import { ValidationError } from '@either/error';
+import { ResponseAuth } from '@customtypes/auth';
 
 export class AuthService {
   async login(email: string, password: string): Promise<ResponseAuth> {
