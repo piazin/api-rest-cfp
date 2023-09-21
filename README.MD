@@ -1,34 +1,38 @@
-# API REST CFP
-
-Auxiliary application for financial control. Help the user to control their income and expenses on a day-to-day basis, in an intuitive and practical way.
+# Finance Innov CFP API
 
 <img src="https://raw.githubusercontent.com/piazin/mobile-cfp/main/assets/icon.png" alt="NODE" width="180" heigth="380">
 
-## Used Stack
+Bem-vindo ao repositório oficial da API do aplicativo de Controle Financeiro Pessoal (CFP) da Finance Innov, um componente essencial do nosso projeto acadêmico.
 
-<img src="https://user-images.githubusercontent.com/25181517/183890598-19a0ac2d-e88a-4005-a8df-1ee36782fde1.png" alt="NODE" width="50" heigth="50">
+## Visão Geral
 
-<img src="https://user-images.githubusercontent.com/25181517/183568594-85e280a7-0d7e-4d1a-9028-c8c2209e073c.png" alt="NODE" width="50" heigth="50">
+A API do Finance Innov CFP é responsável por fornecer os recursos necessários para que o aplicativo móvel de controle financeiro pessoal funcione de maneira eficaz. Ela permite ao aplicativo interagir com um banco de dados, realizar cálculos financeiros, fornecer dados aos usuários e muito mais.
 
-<img src="https://user-images.githubusercontent.com/25181517/183859966-a3462d8d-1bc7-4880-b353-e2cbed900ed6.png" alt="NODE" width="50" heigth="50">
+## Funcionalidades Principais
 
-<img src="https://user-images.githubusercontent.com/25181517/182884177-d48a8579-2cd0-447a-b9a6-ffc7cb02560e.png" alt="NODE" width="50" heigth="50">
+- **Registro de Despesas e Receitas:** A API permite que o aplicativo registre despesas e receitas dos usuários, armazenando esses dados em um banco de dados seguro.
 
-<img src="https://user-images.githubusercontent.com/5418178/177059352-fe91dcd5-e17b-4103-88ae-70d6d396cf85.png" alt="NODE" width="50" heigth="50">
+- **Recuperação de Dados Financeiros:** Os usuários podem acessar informações sobre suas despesas, receitas, metas financeiras e orçamentos por meio da API.
 
-<img src="https://user-images.githubusercontent.com/25181517/183049794-a3dfaddd-22ee-4ffe-b0b4-549ccd4879f9.png" alt="NODE" width="50" heigth="50">
+- **Cálculos Financeiros:** A API executa cálculos complexos, como o acompanhamento de gastos em relação a orçamentos definidos pelos usuários.
 
-<img src="https://user-images.githubusercontent.com/25181517/192108372-f71d70ac-7ae6-4c0d-8395-51d8870c2ef0.png" alt="NODE" width="50" heigth="50">
+- **Segurança:** A API é projetada para manter os dados financeiros dos usuários seguros e protegidos.
 
-<img src="https://user-images.githubusercontent.com/25181517/192109061-e138ca71-337c-4019-8d42-4792fdaa7128.png" alt="NODE" width="50" heigth="50">
+## Documentação
 
-## Funcionalidades
+Para informações detalhadas sobre como usar a API do Finance Innov CFP, consulte nossa [Documentação da API](https://github.com/financeinnov/api-cfp/blob/main/API_DOCUMENTATION.md).
 
-- JWT authenticate
-- Profile picture upload to drive
-- Routine jobs
+## Suporte
 
-## Contributors
+Se você tiver alguma dúvida ou precisar de suporte em relação à API do Finance Innov CFP, sinta-se à vontade para entrar em contato com a equipe de desenvolvimento em [devteam@financeinnov.com](mailto:devteam@financeinnov.com).
+
+## Licença
+
+Este projeto é distribuído sob a [Licença MIT](https://github.com/financeinnov/api-cfp/blob/main/LICENSE). Leia o arquivo `LICENSE` para obter mais informações sobre os termos de uso e distribuição.
+
+Agradecemos por escolher a API do Finance Innov CFP como parte do seu projeto acadêmico de controle financeiro pessoal. Esperamos que nossa API seja útil para você.
+
+## Contribuição
 
 - [@piazin](https://www.github.com/piazin)
 - [@AlexBernardes77](https://www.github.com/AlexBernardes77)
