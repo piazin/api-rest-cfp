@@ -1,22 +1,23 @@
-import express from 'express';
 import config from './config';
-import { useRoutes } from '@routes';
 import { manageCluster } from './cluster';
+import { controllers } from '@controllers/index';
 import mongoose from './api/database/dbconnection';
-import { useMiddlewares } from '@middlewares/useMiddlewares';
+import { createExpressServer } from 'routeify-express';
 import { jobOfDeletingTokens } from '@jobs/deleteUsedTokens';
+import { globalMiddewares } from '@middlewares/globalMiddewares';
 import { notFoundResource } from '@middlewares/notFoundResource';
 import { errorRequestHandler } from '@middlewares/errorRequestHandler';
-
-const app = express();
 
 mongoose.connections[0];
 jobOfDeletingTokens.start();
 
-useMiddlewares(app);
-useRoutes(app);
+const app = createExpressServer({
+  globalPrefix: 'api/v1',
+  defaultExpressJson: true,
+  controllers: controllers,
+  useGlobalMiddlewares: globalMiddewares,
+  useMiddlewaresAfterAll: [notFoundResource],
+});
 
 app.use(errorRequestHandler);
-app.use(notFoundResource);
-
 manageCluster(app, config.cores);

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "CommonJS",
     "esModuleInterop": true,
-
+    "experimentalDecorators": true,
     "target": "ES6",
     "noImplicitAny": true,
     "moduleResolution": "node",
@@ -16,7 +16,6 @@
       "@utils": ["./src/utils/index.ts"],
       "@helpers": ["./src/helpers/index.ts"],
       "@either/*": ["./src/errors/*"],
-      "@routes": ["./src/routes/use.routes.ts"],
       "@middlewares/*": ["./src/api/middlewares/*"],
       "@dto": ["./src/api/services/dto/index.ts"],
       "@customtypes/*": ["./src/api/services/types/*"],
