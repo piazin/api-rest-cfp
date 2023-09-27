@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { ProfilePic } from '@models';
 import { userService } from '@services';
-import { left, right } from '@either/either';
+import { failed, success } from '@either/either';
 import { validateLoginData } from '@helpers';
 import { ValidationError } from '@either/error';
 import { ResponseAuth } from '@customtypes/auth';
@@ -9,25 +9,25 @@ import { ResponseAuth } from '@customtypes/auth';
 export class AuthService {
   async login(email: string, password: string): Promise<ResponseAuth> {
     const { isValid, error } = validateLoginData(email, password);
-    if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isValid) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
 
     const userResult = await userService.findByEmail(email);
 
-    if (userResult.isLeft()) {
+    if (userResult.isFailed()) {
       var { message, statusCode } = userResult.value;
-      return left(new ValidationError({ message, statusCode }));
+      return failed(new ValidationError({ message, statusCode }));
     }
 
     const user = userResult.value;
 
-    if (!user.compareHash(password)) return left(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
+    if (!user.compareHash(password)) return failed(new ValidationError({ message: 'E-mail ou senha incorreta', statusCode: 403 }));
 
     const profilePic = await ProfilePic.findOne({ owner: user?._id });
     const { _id, name, balance, transactions } = user;
     const avatar = profilePic || undefined;
     const token = user.generateJwt();
 
-    return right({
+    return success({
       _id,
       name,
       email,
@@ -40,8 +40,8 @@ export class AuthService {
 
   async register(data: Request): Promise<ResponseAuth> {
     const user = await userService.create(data.body);
-    return user.isRight()
-      ? right(user.value)
-      : left(new ValidationError({ message: user.value.message, statusCode: user.value.statusCode }));
+    return user.isSuccess()
+      ? success(user.value)
+      : failed(new ValidationError({ message: user.value.message, statusCode: user.value.statusCode }));
   }
 }

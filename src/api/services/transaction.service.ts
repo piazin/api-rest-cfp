@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { isOwner, isIdValid } from '@utils';
-import { left, right } from '@either/either';
+import { failed, success } from '@either/either';
 import { ValidationError } from '@either/error';
 import { validateTransactionData } from '@helpers';
 import { User, Transaction, ITransaction } from '@models';
@@ -13,18 +13,18 @@ const { err } = constants;
 export class TransactionService {
   async create(transaction: ITransaction, user_id: string): Promise<ResponseTransaction> {
     const { isValid, error } = validateTransactionData(transaction);
-    if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isValid) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
 
     if (transaction.type != 'expense' && transaction.type != 'income')
-      return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
+      return failed(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
 
-    if (!isIdValid(user_id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!isIdValid(user_id)) return failed(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     transaction.owner = user_id;
     const user = await User.findById(user_id);
 
     if (user.balance === null || user.balance === undefined)
-      return left(new ValidationError({ message: 'Saldo inválida', statusCode: 400 }));
+      return failed(new ValidationError({ message: 'Saldo inválida', statusCode: 400 }));
 
     user.balance =
       transaction.type == 'expense'
@@ -34,7 +34,7 @@ export class TransactionService {
     await user.save();
 
     const response = await Transaction.create(transaction);
-    return right({
+    return success({
       _id: response._id,
       value: response.value,
       category: response.category,
@@ -48,21 +48,21 @@ export class TransactionService {
 
   async update(id: string, user_id: string, newTransactionData: ITransaction): Promise<ResponseTransaction> {
     const { isValid, error } = validateTransactionData(newTransactionData);
-    if (!isValid) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isValid) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
 
-    if (!isIdValid(user_id) || !isIdValid(id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!isIdValid(user_id) || !isIdValid(id)) return failed(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     if (newTransactionData.type !== 'expense' && newTransactionData.type !== 'income')
-      return left(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
+      return failed(new ValidationError({ message: 'Tipo de transação inválida', statusCode: 400 }));
 
     const transactionExisting = await Transaction.findById(id);
 
-    if (!transactionExisting) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
-    if (!isOwner(user_id, transactionExisting.owner)) return left(new ValidationError({ message: err.isNotOwner, statusCode: 401 }));
+    if (!transactionExisting) return failed(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!isOwner(user_id, transactionExisting.owner)) return failed(new ValidationError({ message: err.isNotOwner, statusCode: 401 }));
 
     const user = await User.findById(transactionExisting.owner);
     if (user.balance === null || user.balance === undefined)
-      return left(new ValidationError({ message: 'invalid balance', statusCode: 400 }));
+      return failed(new ValidationError({ message: 'invalid balance', statusCode: 400 }));
 
     user.balance =
       transactionExisting.type == 'expense'
@@ -76,7 +76,7 @@ export class TransactionService {
 
     await user.save();
     const response = await Transaction.findByIdAndUpdate(id, newTransactionData, { new: true });
-    return right({
+    return success({
       _id: response._id,
       value: response.value,
       category: response.category,
@@ -89,15 +89,15 @@ export class TransactionService {
   }
 
   async delete(id: string, user_id: string): Promise<ResponseTransactionVoid> {
-    if (!isIdValid(id) || !isIdValid(user_id)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!isIdValid(id) || !isIdValid(user_id)) return failed(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     const transaction = await Transaction.findById(id);
-    if (!transaction) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!transaction) return failed(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
-    if (!isOwner(user_id, transaction.owner)) return left(new ValidationError({ message: err.isNotOwner, statusCode: 403 }));
+    if (!isOwner(user_id, transaction.owner)) return failed(new ValidationError({ message: err.isNotOwner, statusCode: 403 }));
 
     const deletedTransaction = await Transaction.findByIdAndDelete(id);
-    if (!deletedTransaction) return left(new ValidationError({ message: 'Não foi possível excluir a transação', statusCode: 400 }));
+    if (!deletedTransaction) return failed(new ValidationError({ message: 'Não foi possível excluir a transação', statusCode: 400 }));
 
     const user = await User.findById(user_id);
     console.info('before some -> ' + user.balance);
@@ -111,13 +111,13 @@ export class TransactionService {
 
     await user.save();
 
-    return right(undefined);
+    return success(undefined);
   }
 
   async findByOwnerId(userId: string, reqQuery: Request): Promise<ResponseTransactionArray> {
     const queryObj = { ...reqQuery.query };
 
-    if (!isIdValid(userId)) return left(new ValidationError({ message: err.invalidID, statusCode: 400 }));
+    if (!isIdValid(userId)) return failed(new ValidationError({ message: err.invalidID, statusCode: 400 }));
 
     const currentYear = Number(queryObj.year) || new Date().getFullYear();
     const startDate = new Date(currentYear, 0, 1).toISOString();
@@ -125,7 +125,7 @@ export class TransactionService {
 
     if (queryObj.include === 'summary') {
       var data = await this.getTransactionDataForCharts(userId, startDate, endDate);
-      return right({ transactions: data });
+      return success({ transactions: data });
     }
 
     const transactions = await Transaction.find({
@@ -139,10 +139,10 @@ export class TransactionService {
       .populate({ path: 'category', strictPopulate: false });
 
     if (queryObj.include === 'month') {
-      return right({ transactions: this.filterTransactionsByMonth(transactions) });
+      return success({ transactions: this.filterTransactionsByMonth(transactions) });
     }
 
-    return right({ transactions: transactions });
+    return success({ transactions: transactions });
   }
 
   private async getTransactionDataForCharts(userId: string, startDate: string, endDate: string): Promise<MonthTransactions> {

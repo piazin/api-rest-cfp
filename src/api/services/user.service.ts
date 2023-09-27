@@ -4,7 +4,7 @@ import { User, IUser, ProfilePic, IProfilePic } from '@models';
 
 import { isIdValid } from '@utils';
 import { UpdateUserDto } from '@dto';
-import { left, right } from '@either/either';
+import { failed, success } from '@either/either';
 import { ValidationError } from '@either/error';
 import constantsUser from '../../constants/user.constants';
 import { uploadFileGoogleDrive, deleteFileGoogleDrive } from '../../apis/googleDriveApi';
@@ -16,25 +16,25 @@ const {
 
 export class UserService {
   async findById(user_id: string): Promise<ResponseUserFind> {
-    if (!isIdValid(user_id)) return left(new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 400 }));
+    if (!isIdValid(user_id)) return failed(new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 400 }));
 
     var user = await User.findOne({ _id: user_id }).select('-password -__v');
-    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
+    if (!user) return failed(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     var avatar = await ProfilePic.findOne({ owner: user_id });
     user.avatar = avatar;
 
-    return right(user);
+    return success(user);
   }
 
   async findByEmail(email: string): Promise<ResponseUserFind> {
     var user = await User.findOne({ email }).select('-password, -__v');
-    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
+    if (!user) return failed(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     var avatar = await ProfilePic.findOne({ owner: user._id });
     user.avatar = avatar;
 
-    return right(user);
+    return success(user);
   }
 
   async create(user: IUser): Promise<ResponseUser> {
@@ -45,10 +45,10 @@ export class UserService {
     });
 
     const { error, value } = schemaValidation.validate(user);
-    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (error) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
 
     const userAlreadyExists = await User.findOne({ email: user.email });
-    if (userAlreadyExists) return left(new ValidationError({ message: 'Usuário já cadastrado', statusCode: 409 }));
+    if (userAlreadyExists) return failed(new ValidationError({ message: 'Usuário já cadastrado', statusCode: 409 }));
 
     var userCreated = await User.create(user);
 
@@ -60,7 +60,7 @@ export class UserService {
 
     const { _id, name, email, balance, transactions, avatar, created_at } = userCreated;
 
-    return right({
+    return success({
       _id,
       name,
       email,
@@ -81,53 +81,53 @@ export class UserService {
     });
 
     const { error, value } = schemaValidation.validate(updateUserDto);
-    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
-    if (!isIdValid(id)) return left(new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 404 }));
+    if (error) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isIdValid(id)) return failed(new ValidationError({ message: 'Usuário não encontrado ou ID invalido', statusCode: 404 }));
     if (Object.keys(updateUserDto).length === 0)
-      return left(new ValidationError({ message: 'Nenhuma informação á ser atualizada', statusCode: 400 }));
+      return failed(new ValidationError({ message: 'Nenhuma informação á ser atualizada', statusCode: 400 }));
 
     const user = await User.findById(id);
-    if (!user) return left(new ValidationError({ message: 'Usuário não encontrado', statusCode: 404 }));
+    if (!user) return failed(new ValidationError({ message: 'Usuário não encontrado', statusCode: 404 }));
 
     if (updateUserDto?.email) {
       const userWithThisEmail = await User.findOne({ email: updateUserDto.email });
 
       if (userWithThisEmail) {
         if (user.email !== userWithThisEmail.email) {
-          return left(new ValidationError({ message: 'O email já está sendo usado', statusCode: 400 }));
+          return failed(new ValidationError({ message: 'O email já está sendo usado', statusCode: 400 }));
         }
       }
     }
 
     if (updateUserDto?.password) {
-      if (!updateUserDto?.currentPassword) return left(new ValidationError({ message: 'A senha atual não é valida', statusCode: 401 }));
+      if (!updateUserDto?.currentPassword) return failed(new ValidationError({ message: 'A senha atual não é valida', statusCode: 401 }));
 
       if (!user.compareHash(updateUserDto.currentPassword))
-        return left(new ValidationError({ message: 'Senha incorreta!', statusCode: 401 }));
+        return failed(new ValidationError({ message: 'Senha incorreta!', statusCode: 401 }));
     }
 
     const updatedUser = await User.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password -__v');
 
-    return right(updatedUser);
+    return success(updatedUser);
   }
 
   async changePassword(email: string, password: string): Promise<ResponseChangeUserPassword> {
     var user = await User.findOne({ email });
-    if (!user) return left(new ValidationError({ message: userNotFound, statusCode: 404 }));
+    if (!user) return failed(new ValidationError({ message: userNotFound, statusCode: 404 }));
 
     var codeChecked = await tokenService.isCodeChecked(user._id);
 
-    if (codeChecked.isLeft()) return left(new ValidationError({ message: codeChecked.value.message, statusCode: 400 }));
+    if (codeChecked.isFailed()) return failed(new ValidationError({ message: codeChecked.value.message, statusCode: 400 }));
 
     var user = await User.findOneAndUpdate({ _id: user._id }, { password: password }, { new: true });
 
     await tokenService.setCodeUsed(codeChecked.value.data._id);
 
-    return right('Senha alterada com sucesso!');
+    return success('Senha alterada com sucesso!');
   }
 
   async uploadProfilePic(owner: string, avatar: any): Promise<ResponseUploadProfilePic> {
-    if (!isIdValid(owner)) return left(new ValidationError({ message: invalidUser, statusCode: 400 }));
+    if (!isIdValid(owner)) return failed(new ValidationError({ message: invalidUser, statusCode: 400 }));
     const profilePicExists = await ProfilePic.findOne({ owner: owner });
 
     if (profilePicExists) {
@@ -143,14 +143,14 @@ export class UserService {
     };
 
     var response = await uploadFileGoogleDrive(avatarFilter);
-    if (!response) return left(new ValidationError({ message: 'Não foi possivel fazer o upload', statusCode: 500 }));
+    if (!response) return failed(new ValidationError({ message: 'Não foi possivel fazer o upload', statusCode: 500 }));
 
     avatarFilter.url = `https://drive.google.com/uc?export=view&id=${response.id}`;
     avatarFilter.googleFileId = response.id;
 
     const avatarCreated = await ProfilePic.create(avatarFilter);
 
-    return right({
+    return success({
       url: avatarCreated.url,
       size: avatarCreated.size,
       owner: avatarCreated.owner,

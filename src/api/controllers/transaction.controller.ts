@@ -13,7 +13,7 @@ export class TransactionController {
   @UseMiddleware(auth)
   async getTransactionByUserId(req: IRequest, res: Response) {
     const response = await transactionService.findByOwnerId(req.user!.id, req);
-    return response.isRight()
+    return response.isSuccess()
       ? res.status(200).json({
           status: 200,
           results: response.value.transactions?.length,
@@ -29,7 +29,7 @@ export class TransactionController {
   @UseMiddleware(auth)
   async createTransaction(req: Request, res: Response) {
     const response = await transactionService.create(req.body, req.user!.id);
-    return response.isRight()
+    return response.isSuccess()
       ? res.status(201).json({ status: 201, data: response.value })
       : res.status(response.value.statusCode).json({
           status: response.value.statusCode,
@@ -41,7 +41,7 @@ export class TransactionController {
   @UseMiddleware(auth)
   async updateTransaction(req: Request, res: Response) {
     const response = await transactionService.update(req.params.id, req.user!.id, req.body);
-    return response.isRight()
+    return response.isSuccess()
       ? res.status(201).json({ status: 200, data: response.value })
       : res.status(response.value.statusCode).json({
           status: response.value.statusCode,
@@ -53,7 +53,7 @@ export class TransactionController {
   @UseMiddleware(auth)
   async removeTransaction(req: Request, res: Response) {
     const response = await transactionService.delete(req.params.id, req.user!.id);
-    return response.isRight()
+    return response.isSuccess()
       ? res.status(204).json({ status: 204, data: response.value })
       : res.status(response.value.statusCode).json({
           status: response.value.statusCode,

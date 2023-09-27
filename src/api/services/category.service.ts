@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { Types } from 'mongoose';
 import { isIdValid, isOwner } from '@utils';
-import { Either, left, right } from '@either/either';
+import { Either, failed, success } from '@either/either';
 import { Category, ICategory, Transaction } from '@models';
 import { CreateCategoryDto, UpdateCategoryDto } from '@dto';
 import { InternalServerError, ValidationError } from '@either/error';
@@ -14,11 +14,11 @@ type Response = Either<InternalServerError, CategoryResponse | CategoryResponse[
 
 export class CategoryService {
   async findAll(ownerId: string): Promise<Response> {
-    if (!isIdValid(ownerId)) return left(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
+    if (!isIdValid(ownerId)) return failed(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
 
     const categories = await Category.find({ owner: ownerId }).select('-__v');
 
-    return right(categories);
+    return success(categories);
   }
 
   async create(createCategoryDto: CreateCategoryDto, id: string): Promise<Response> {
@@ -30,12 +30,12 @@ export class CategoryService {
     });
 
     const { error, value } = schemaValidation.validate(createCategoryDto);
-    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
-    if (!isIdValid(id)) return left(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
+    if (error) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isIdValid(id)) return failed(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
 
     const category = await Category.create({ ...createCategoryDto, owner: id });
 
-    return right(category);
+    return success(category);
   }
 
   async update(updateCategoryDto: UpdateCategoryDto, ownerId: string): Promise<Response> {
@@ -48,25 +48,25 @@ export class CategoryService {
     });
 
     const { error, value } = schemaValidation.validate(updateCategoryDto);
-    if (error) return left(new ValidationError({ message: error.message, statusCode: 400 }));
-    if (!isIdValid(ownerId)) return left(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
+    if (error) return failed(new ValidationError({ message: error.message, statusCode: 400 }));
+    if (!isIdValid(ownerId)) return failed(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
   }
 
   async delete(categoryId: string, ownerId: string): Promise<Response> {
-    if (!isIdValid(ownerId)) return left(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
-    if (!isIdValid(categoryId)) return left(new ValidationError({ message: 'Id da categoria invalido', statusCode: 400 }));
+    if (!isIdValid(ownerId)) return failed(new ValidationError({ message: 'Id de usuário invalido!', statusCode: 400 }));
+    if (!isIdValid(categoryId)) return failed(new ValidationError({ message: 'Id da categoria invalido', statusCode: 400 }));
 
     const transactionsWithThisCategory = await Transaction.find({ category: categoryId });
     if (transactionsWithThisCategory?.length > 0)
-      return left(new ValidationError({ message: 'Existem transações com está categoria', statusCode: 405 }));
+      return failed(new ValidationError({ message: 'Existem transações com está categoria', statusCode: 405 }));
 
     const category = await Category.findById(categoryId);
-    if (!category) return left(new ValidationError({ message: 'Categoria não encontrada', statusCode: 404 }));
-    if (!isOwner(category.owner, ownerId)) return left(new ValidationError({ message: 'Não autorizado!', statusCode: 401 }));
+    if (!category) return failed(new ValidationError({ message: 'Categoria não encontrada', statusCode: 404 }));
+    if (!isOwner(category.owner, ownerId)) return failed(new ValidationError({ message: 'Não autorizado!', statusCode: 401 }));
 
     const deletedCategory = await Category.deleteOne({ _id: categoryId, owner: ownerId });
 
-    return right(deletedCategory.deletedCount);
+    return success(deletedCategory.deletedCount);
   }
 
   async addDefaultCategoriesToUser(ownerId: Types.ObjectId) {
