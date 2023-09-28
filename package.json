@@ -47,7 +47,7 @@
     "nodemon": "^2.0.20",
     "rate-limiter-flexible": "^2.4.1",
     "resend": "^0.15.3",
-    "routeify-express": "^1.0.7",
+    "routeify-express": "^1.1.0",
     "seedrandom": "^3.0.5",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
